@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a63c4">
+<title>Back Gear — Management</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="app-body">
+
+<!-- ============ LOGIN ============ -->
+<div class="login" id="loginScreen">
+  <main class="login-card">
+    <svg class="login-logo" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="3"/>
+      <circle cx="20" cy="20" r="5" fill="currentColor"/>
+      <path d="M20 3v9M6.5 28.5l8-4.5M33.5 28.5l-8-4.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1>Back Gear</h1>
+    <p class="login-sub">Driving School — Staff Login</p>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label class="label" for="lgEmail">Email or phone</label>
+        <input class="control" id="lgEmail" name="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label class="label" for="lgPass">Password</label>
+        <div class="pw-wrap">
+          <input class="control" id="lgPass" name="password" type="password" autocomplete="current-password" required>
+          <button class="pw-toggle" type="button" id="pwToggle" aria-label="Show password">
+            <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-eye"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="error-text" id="loginError" hidden></p>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
+    </form>
+
+    <div class="login-demo">
+      <p><b>Demo login</b> — prototype only, no real authentication</p>
+      <button class="btn btn-sm btn-block" type="button" id="fillDemo">
+        Use demo account &nbsp;·&nbsp; owner@backgear.demo / demo123
+      </button>
+    </div>
+    <p class="login-back"><a href="/">&larr; Back to the website</a></p>
+  </main>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" hidden>
+  <p class="demo-bar"><b>Demo prototype</b> — sample data, saved only in this browser</p>
+
+  <aside class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-brand">
+      <svg class="sidebar-logo" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="20" cy="20" r="5" fill="currentColor"/>
+        <path d="M20 3v9M6.5 28.5l8-4.5M33.5 28.5l-8-4.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span><b>Back Gear</b><small>Management</small></span>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-foot">
+      <button class="btn btn-sm btn-block" id="signOutDesktop">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="/assets/icons.svg#i-log-out"/></svg>Sign out</button>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <button class="topbar-back" id="topBack" hidden aria-label="Go back">
+      <svg class="icon icon-lg" aria-hidden="true"><use href="/assets/icons.svg#i-arrow-left"/></svg>
+    </button>
+    <div class="topbar-title">
+      <h1 id="pageTitle">Home</h1>
+      <p id="pageSub"></p>
+    </div>
+    <div class="topbar-actions" id="topActions"></div>
+  </header>
+
+  <main class="content" id="view" tabindex="-1"></main>
+
+  <nav class="bottomnav" id="bottomNav" aria-label="Main"></nav>
+</div>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet-panel">
+    <div class="sheet-head">
+      <h2 id="sheetTitle">Form</h2>
+      <button class="btn btn-sm btn-ghost" type="button" data-close-sheet aria-label="Close">
+        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-x"/></svg>
+      </button>
+    </div>
+    <form id="sheetForm">
+      <div class="sheet-body" id="sheetBody"></div>
+      <div class="sheet-foot" id="sheetFoot"></div>
+    </form>
+  </div>
+</dialog>
+
+<script type="module" src="/js/app/main.js"></script>
+</body>
+</html>

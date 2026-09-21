@@ -1,0 +1,240 @@
+import { $, icon, esc, money, initials, dmy, emptyState, openSheet, toast,
+         field, selectField, textareaField, downloadCSV } from '../ui.js';
+import { setPage, SECONDARY, go } from '../main.js';
+import { listInstructors, studentsOf, listEnquiries, setEnquiryStatus, markConverted,
+         addEnquiry, listStudents, feeSummary, allPayments, getStudent, attendanceCount,
+         courseById, totalPending, resetDemo, COURSES } from '../../data/store.js';
+import { openAddStudent } from './students.js';
+
+/* ---------------- More menu (mobile) ---------------- */
+export function renderMore(view){
+  setPage({ title:'More' });
+  view.innerHTML = `<div class="rows">
+    ${SECONDARY.map(s => `<a class="row-item" href="#/${s.id}">
+      ${icon(s.icon)}<span class="row-main"><b>${esc(s.label)}</b></span>
+      ${icon('chevron-right','icon row-chev')}</a>`).join('')}
+    <button class="row-item" type="button" data-do="signout">
+      ${icon('log-out')}<span class="row-main"><b>Sign out</b></span></button>
+  </div>`;
+  view.addEventListener('click', e => {
+    if (e.target.closest('[data-do="signout"]')){
+      try { sessionStorage.removeItem('backgear.demo.session'); } catch {}
+      location.reload();
+    }
+  });
+}
+
+/* ---------------- Instructors ---------------- */
+export function renderInstructors(view){
+  const list = listInstructors();
+  setPage({ title:'Instructors', sub:`${list.length} instructors`, back:true });
+  view.innerHTML = `<div class="rows">${list.map(i => {
+    const mine = studentsOf(i.id);
+    return `<button class="row-item" type="button" data-inst="${esc(i.id)}">
+      <span class="avatar" aria-hidden="true">${esc(initials(i.name))}</span>
+      <span class="row-main"><b>${esc(i.name)}</b>
+        <span>${mine.length} student${mine.length === 1 ? '' : 's'} · ${esc(i.languages)}</span></span>
+      <span class="row-side"><span class="pill ${i.active ? 'pill-green' : ''}">
+        ${i.active ? 'Active' : 'Inactive'}</span></span>
+      ${icon('chevron-right','icon row-chev')}
+    </button>`; }).join('')}</div>
+    <div id="instPanel" style="margin-top:18px"></div>`;
+
+  view.addEventListener('click', e => {
+    const row = e.target.closest('[data-inst]');
+    if (!row) return;
+    const i = list.find(x => x.id === row.dataset.inst);
+    const mine = studentsOf(i.id);
+    $('#instPanel', view).innerHTML = `
+      <div class="block-head"><h2>${esc(i.name)} — assigned students</h2></div>
+      ${mine.length ? `<div class="rows">${mine.map(s => `
+        <a class="row-item" href="#/student/${esc(s.id)}">
+          <span class="row-main"><b>${esc(s.name)}</b>
+            <span>${esc(courseById(s.courseId).label)}</span></span>
+          ${icon('chevron-right','icon row-chev')}</a>`).join('')}</div>`
+      : emptyState('users', 'No active students assigned.')}`;
+    $('#instPanel', view).scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+}
+
+/* ---------------- Enquiries ---------------- */
+const STATUSES = ['New','Contacted','Converted','Closed'];
+let enqFilter = '';
+
+export function renderEnquiries(view){
+  const all = listEnquiries();
+  const list = enqFilter ? all.filter(e => e.status === enqFilter) : all;
+  setPage({ title:'Enquiries', sub:`${all.filter(e => e.status === 'New').length} new`, back:true,
+    actions:`<button class="btn btn-primary btn-sm" data-do="add">${icon('plus','icon icon-sm')}Add</button>` });
+
+  const courseLabel = id => id === 'licence' ? 'Licence help'
+    : (COURSES.find(c => c.id === id)?.label || 'Not specified');
+
+  view.innerHTML = `
+    <div class="chips" role="group" aria-label="Filter enquiries">
+      ${['', ...STATUSES].map(s => `<button class="chip" type="button" data-filter="${esc(s)}"
+        aria-pressed="${enqFilter === s}">${s || 'All'}</button>`).join('')}
+    </div>
+    ${list.length ? `<div class="rows">${list.map(e => {
+      const tone = e.status === 'New' ? 'pill-amber' : e.status === 'Converted' ? 'pill-green'
+                 : e.status === 'Closed' ? '' : 'pill-blue';
+      return `<div class="row-item" style="align-items:flex-start">
+        <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(e.name))}</span>
+        <span class="row-main">
+          <b>${esc(e.name)}</b>
+          <span>${esc(courseLabel(e.interest))} · ${esc(e.phone)}</span>
+          <span>${dmy(e.date)}${e.note ? ' · ' + esc(e.note) : ''}</span>
+          <span style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <span class="pill ${tone}">${esc(e.status)}</span>
+            ${e.status === 'New' ? `<button class="btn btn-sm" data-called="${esc(e.id)}">Mark contacted</button>` : ''}
+            ${e.status !== 'Converted' && e.status !== 'Closed'
+              ? `<button class="btn btn-sm btn-primary" data-convert="${esc(e.id)}">Convert to student</button>
+                 <button class="btn btn-sm" data-close="${esc(e.id)}">Close</button>` : ''}
+            ${e.studentId ? `<a class="btn btn-sm" href="#/student/${esc(e.studentId)}">Open student</a>` : ''}
+          </span>
+        </span>
+      </div>`; }).join('')}</div>`
+    : emptyState('phone-call', 'No enquiries with this status.')}
+    <p class="hr-note">Enquiries sent from the public website appear here.</p>`;
+
+  const handle = e => {
+    const chip = e.target.closest('[data-filter]');
+    if (chip){ enqFilter = chip.dataset.filter; renderEnquiries(view); return; }
+    const called = e.target.closest('[data-called]');
+    if (called){ setEnquiryStatus(called.dataset.called, 'Contacted'); toast('Marked as contacted'); return; }
+    const closed = e.target.closest('[data-close]');
+    if (closed){ setEnquiryStatus(closed.dataset.close, 'Closed'); toast('Enquiry closed'); return; }
+    const conv = e.target.closest('[data-convert]');
+    if (conv){
+      const enq = listEnquiries().find(x => x.id === conv.dataset.convert);
+      if (!enq) return;
+      openAddStudent({
+        name: enq.name, phone: enq.phone,
+        courseId: COURSES.find(c => c.id === enq.interest)?.id || 'c-car30',
+        onCreated: student => { markConverted(enq.id, student.id); toast(`${student.name} enrolled from an enquiry`); },
+      });
+      return;
+    }
+    if (e.target.closest('[data-do="add"]')) openAddEnquiry();
+  };
+  view.addEventListener('click', handle);
+  $('#topActions').onclick = handle;
+}
+
+function openAddEnquiry(){
+  openSheet({
+    title:'Add enquiry',
+    body: `${field({ name:'name', label:'Name', required:true })}
+      ${field({ name:'phone', label:'Phone number', type:'tel', required:true, attrs:'inputmode="tel"' })}
+      ${selectField({ name:'interest', label:'Interested in', value:'c-car30',
+        options:[...COURSES.map(c => ({ value:c.id, label:c.label })),
+                 { value:'licence', label:'Licence help' }] })}
+      ${textareaField({ name:'note', label:'Note', rows:2 })}`,
+    submitLabel:'Add enquiry',
+    onSave: data => { addEnquiry(data); toast('Enquiry added'); },
+  });
+}
+
+/* ---------------- Reports ---------------- */
+export function renderReports(view){
+  setPage({ title:'Reports', sub:'Simple lists you can download', back:true });
+  const students = listStudents();
+  const payments = allPayments();
+  const enquiries = listEnquiries();
+
+  const REPORTS = [
+    { id:'students',  label:'Student report',   note:`${students.length} students`, icon:'users' },
+    { id:'attendance',label:'Attendance report',note:'Present and absent totals',   icon:'calendar-check' },
+    { id:'fees',      label:'Fee collection',   note:`${payments.length} payments`, icon:'banknote' },
+    { id:'pending',   label:'Pending fees',     note:money(totalPending()) + ' outstanding', icon:'wallet' },
+    { id:'enquiries', label:'Enquiry report',   note:`${enquiries.length} enquiries`, icon:'phone-call' },
+  ];
+
+  view.innerHTML = `<div class="rows">${REPORTS.map(r => `
+      <button class="row-item" type="button" data-report="${r.id}">
+        ${icon(r.icon)}
+        <span class="row-main"><b>${esc(r.label)}</b><span>${esc(r.note)}</span></span>
+        <span class="row-side"><span class="pill">${icon('download','icon icon-sm')} CSV</span></span>
+      </button>`).join('')}</div>
+    <p class="hr-note">Each report downloads as a CSV file you can open in Excel.</p>`;
+
+  view.addEventListener('click', e => {
+    const btn = e.target.closest('[data-report]');
+    if (!btn) return;
+    const kind = btn.dataset.report;
+    if (kind === 'students'){
+      downloadCSV('students.csv', [['ID','Name','Phone','Course','Days','Instructor','Joined','Status','Fee','Paid','Remaining','Attendance','Licence']]
+        .concat(students.map(s => { const c = courseById(s.courseId); const f = feeSummary(s.id);
+          const a = attendanceCount(s.id);
+          return [s.id, s.name, s.phone, c.name, c.days,
+            listInstructors().find(i => i.id === s.instructorId)?.name || '',
+            s.joinedOn, s.status, f.fee, f.paid, f.due, `${a.present}/${a.total}`, s.licence]; })));
+    }
+    if (kind === 'attendance'){
+      downloadCSV('attendance.csv', [['Student','Present','Total marked','Percentage']]
+        .concat(students.map(s => { const a = attendanceCount(s.id);
+          return [s.name, a.present, a.total, a.total ? Math.round(a.present / a.total * 100) + '%' : '—']; })));
+    }
+    if (kind === 'fees'){
+      downloadCSV('fee-collection.csv', [['Date','Student','Amount','Method','Note']]
+        .concat(payments.map(p => [p.date, getStudent(p.studentId)?.name || '', p.amount, p.method, p.note])));
+    }
+    if (kind === 'pending'){
+      downloadCSV('pending-fees.csv', [['Student','Phone','Course fee','Paid','Remaining']]
+        .concat(students.map(s => ({ s, f: feeSummary(s.id) }))
+          .filter(x => x.f.due > 0)
+          .map(({ s, f }) => [s.name, s.phone, f.fee, f.paid, f.due])));
+    }
+    if (kind === 'enquiries'){
+      downloadCSV('enquiries.csv', [['Date','Name','Phone','Interested in','Status','Note']]
+        .concat(enquiries.map(e => [e.date, e.name, e.phone,
+          e.interest === 'licence' ? 'Licence help' : (COURSES.find(c => c.id === e.interest)?.label || ''),
+          e.status, e.note])));
+    }
+    toast('CSV downloaded');
+  });
+}
+
+/* ---------------- Settings ---------------- */
+export function renderSettings(view){
+  setPage({ title:'Settings', back:true });
+  view.innerHTML = `
+    <div class="notice notice-amber">${icon('triangle-alert')}
+      <span><b>This is a demo prototype.</b> Information is stored only in this browser.
+      It is not a database, it is not backed up and it is not secure. The production
+      version will add a real backend, real logins and proper permissions.</span></div>
+
+    <div class="block" style="margin-top:20px">
+      <div class="block-head"><h2>School details</h2></div>
+      <dl class="deflist">
+        <div><dt>Name</dt><dd>Back Gear Driving School</dd></div>
+        <div><dt>Location</dt><dd>Bathinda, Punjab</dd></div>
+        <div><dt>Phone</dt><dd>+91 98765 43210</dd></div>
+        <div><dt>Email</dt><dd>backgeardrivingschool@gmail.com</dd></div>
+        <div><dt>Working hours</dt><dd>Monday to Saturday, 6:00 AM – 7:00 PM</dd></div>
+      </dl>
+      <p class="hr-note">In the real system these would be editable by the owner.</p>
+    </div>
+
+    <div class="block">
+      <div class="block-head"><h2>Demo data</h2></div>
+      <div class="rows">
+        <button class="row-item" type="button" data-do="reset">
+          ${icon('triangle-alert')}
+          <span class="row-main"><b>Reset the demo</b>
+            <span>Put back the original sample students, attendance and payments</span></span>
+        </button>
+      </div>
+    </div>`;
+
+  view.addEventListener('click', e => {
+    if (!e.target.closest('[data-do="reset"]')) return;
+    openSheet({
+      title:'Reset the demo?',
+      body:`<p>Everything you changed during this demo will be replaced with the
+        original sample data.</p>`,
+      submitLabel:'Reset demo',
+      onSave: () => { resetDemo(); toast('Demo data restored'); go('#/home'); },
+    });
+  });
+}

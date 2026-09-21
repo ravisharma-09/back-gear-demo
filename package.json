@@ -1,0 +1,19 @@
+{
+  "name": "back-gear-demo",
+  "version": "1.0.0",
+  "description": "Back Gear Driving School - client demo prototype (frontend only)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node serve.cjs",
+    "icons": "node build-icons.cjs",
+    "test": "node test-data-layer.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "lucide": "^1.47.0",
+    "lucide-static": "^1.47.0"
+  }
+}
