@@ -48,14 +48,22 @@ export function renderFees(view){
 
     <div class="block">
       <div class="block-head"><h2>Students with a balance</h2>
-        <span class="muted small">${owing.length}</span></div>
-      ${owing.length ? `<div class="rows">${owing.slice(0, 12).map(s => `
-        <a class="row-item" href="#/student/${esc(s.id)}">
-          <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(s.name))}</span>
-          <span class="row-main"><b>${esc(s.name)}</b>
-            <span>Fee ${money(s.fee)} · Paid ${money(s.paid)}</span></span>
-          <span class="row-side"><span class="amount" style="color:var(--amber)">${money(s.due)}</span>
-            <span class="tiny muted">remaining</span></span>
+        <span class="count">${owing.length}</span></div>
+      ${owing.length ? `
+        <div class="tcols t-fees" aria-hidden="true">
+          <span>Student</span><span>Course</span>
+          <span class="r">Fee / Paid</span><span class="r">Remaining</span><span></span>
+        </div>
+        <div class="rows">${owing.map(s => `
+        <a class="row-item trow t-fees" href="#/student/${esc(s.id)}">
+          <span class="row-main" style="display:flex;align-items:center;gap:11px">
+            <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(s.name))}</span>
+            <span style="min-width:0"><b>${esc(s.name)}</b>
+              <span>Fee ${money(s.fee)} · Paid ${money(s.paid)}</span></span>
+          </span>
+          <span class="trow-cell">${esc(courseById(s.courseId).name)}</span>
+          <span class="trow-cell r">${money(s.fee)} / ${money(s.paid)}</span>
+          <span class="row-side"><span class="amount" style="color:var(--amber)">${money(s.due)}</span></span>
           ${icon('chevron-right','icon row-chev')}
         </a>`).join('')}</div>`
       : emptyState('check', 'Everyone has paid in full.')}
@@ -63,7 +71,7 @@ export function renderFees(view){
 
     <div class="block">
       <div class="block-head"><h2>Payment history</h2>
-        <button class="btn btn-sm btn-ghost" data-do="csv">${icon('download','icon icon-sm')}CSV</button></div>
+        <button class="btn btn-sm btn-ghost" data-do="csv">${icon('download','icon icon-sm')}Export CSV</button></div>
       ${payments.length ? `<div class="rows">${payments.slice(0, 15).map(p => {
         const st = getStudent(p.studentId);
         return `<div class="row-item">
@@ -75,7 +83,8 @@ export function renderFees(view){
       : emptyState('banknote', 'No payments recorded yet.')}
     </div>
 
-    <button class="btn btn-primary btn-lg btn-block" data-do="pay">${icon('plus')}Add payment</button>`;
+    <p style="margin-top:22px"><button class="btn btn-primary btn-lg btn-block" data-do="pay">
+      ${icon('plus')}Add payment</button></p>`;
 
   const handle = e => {
     if (e.target.closest('[data-do="pay"]')) openAddPayment();

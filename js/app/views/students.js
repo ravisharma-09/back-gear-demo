@@ -13,39 +13,54 @@ const filters = { q:'', status:'' };
 /* ---------------- list ---------------- */
 export function renderStudents(view){
   const list = listStudents(filters);
-  setPage({ title:'Students', sub:`${list.length} shown`,
+  setPage({ title:'Students', sub:`${listStudents({ status:'Active' }).length} learning right now`,
     actions:`<button class="btn btn-primary btn-sm" data-do="add">${icon('plus','icon icon-sm')}Add</button>` });
 
+  const instructors = listInstructors();
   view.innerHTML = `
-    <div class="searchbar">
-      ${icon('search')}
-      <label class="sr-only" for="stSearch">Search students</label>
-      <input class="control" id="stSearch" type="search" placeholder="Search students"
-             value="${esc(filters.q)}" autocomplete="off">
+    <div class="toolbar">
+      <div class="searchbar">
+        ${icon('search')}
+        <label class="sr-only" for="stSearch">Search students</label>
+        <input class="control" id="stSearch" type="search" placeholder="Search by name or phone"
+               value="${esc(filters.q)}" autocomplete="off">
+      </div>
+      <div class="chips" role="group" aria-label="Filter by status">
+        ${['', 'Active', 'On hold', 'Completed'].map(s => `
+          <button class="chip" type="button" data-status="${esc(s)}"
+            aria-pressed="${filters.status === s}">${s || 'All'}</button>`).join('')}
+      </div>
     </div>
-    <div class="chips" role="group" aria-label="Filter by status">
-      ${['', 'Active', 'On hold', 'Completed'].map(s => `
-        <button class="chip" type="button" data-status="${esc(s)}"
-          aria-pressed="${filters.status === s}">${s || 'All'}</button>`).join('')}
-    </div>
-    ${list.length ? `<div class="rows">${list.map(st => {
-      const c = courseById(st.courseId);
-      const { due } = feeSummary(st.id);
-      return `<a class="row-item" href="#/student/${esc(st.id)}">
-        <span class="avatar" aria-hidden="true">${esc(initials(st.name))}</span>
-        <span class="row-main">
-          <b>${esc(st.name)}</b>
-          <span>${esc(c.name)} · ${c.days} Days &nbsp;·&nbsp; ${esc(st.phone)}</span>
-        </span>
-        <span class="row-side">
-          ${due > 0 ? `<span class="pill pill-amber">${money(due)} due</span>`
-                    : `<span class="pill pill-green">Paid</span>`}
-        </span>
-        ${icon('chevron-right','icon row-chev')}
-      </a>`; }).join('')}</div>`
+    ${list.length ? `
+      <div class="tcols t-students" aria-hidden="true">
+        <span>Student</span><span>Course</span><span>Instructor</span>
+        <span class="r">Classes</span><span class="r">Fees</span><span></span>
+      </div>
+      <div class="rows">${list.map(st => {
+        const c = courseById(st.courseId);
+        const { due } = feeSummary(st.id);
+        const a = attendanceCount(st.id);
+        const ins = instructors.find(i => i.id === st.instructorId);
+        return `<a class="row-item trow t-students" href="#/student/${esc(st.id)}">
+          <span class="row-main" style="display:flex;align-items:center;gap:11px">
+            <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(st.name))}</span>
+            <span style="min-width:0">
+              <b>${esc(st.name)}</b>
+              <span>${esc(c.name)} · ${c.days} Days &nbsp;·&nbsp; ${esc(st.phone)}</span>
+            </span>
+          </span>
+          <span class="trow-cell">${esc(c.name)} · ${c.days} Days</span>
+          <span class="trow-cell">${esc(ins?.name || '—')}</span>
+          <span class="trow-cell r">${a.present}/${a.total || 0}</span>
+          <span class="row-side">
+            ${due > 0 ? `<span class="pill pill-amber">${money(due)} due</span>`
+                      : `<span class="pill pill-green">Paid</span>`}
+          </span>
+          ${icon('chevron-right','icon row-chev')}
+        </a>`; }).join('')}</div>`
     : emptyState('users', filters.q || filters.status
         ? 'No student matches this search.' : 'No students yet.')}
-    <p class="hr-note">Tap a student to open their profile.</p>`;
+    <p class="hr-note">${list.length} of ${listStudents().length} students. Select a row to open the profile.</p>`;
 
   const search = $('#stSearch', view);
   let t;
@@ -136,9 +151,12 @@ export function renderStudentProfile(view, id){
     <div class="profile-head">
       <span class="avatar avatar-lg" aria-hidden="true">${esc(initials(st.name))}</span>
       <div style="flex:1;min-width:0">
-        <h2>${esc(st.name)}</h2>
-        <p>${esc(st.phone)}${st.area ? ' · ' + esc(st.area) : ''}</p>
-        <p style="margin-top:6px"><span class="pill ${st.status === 'Active' ? 'pill-blue' : ''}">${esc(st.status)}</span></p>
+        <p style="font-size:15px;color:var(--ink);font-weight:600">${esc(course.label)}</p>
+        <p>Instructor: ${esc(instructor?.name || 'not assigned')} &nbsp;·&nbsp; Joined ${esc(dmy(st.joinedOn))}</p>
+        <p style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
+          <span class="pill ${st.status === 'Active' ? 'pill-blue' : ''}">${esc(st.status)}</span>
+          <a class="pill" href="tel:${esc(st.phone.replace(/\s/g,''))}">${esc(st.phone)}</a>
+        </p>
       </div>
     </div>
 
@@ -146,8 +164,8 @@ export function renderStudentProfile(view, id){
       <div class="keyfact"><b>${money(fee)}</b><span>Course fee</span></div>
       <div class="keyfact paid"><b>${money(paid)}</b><span>Paid</span></div>
       <div class="keyfact due"><b>${money(due)}</b><span>Remaining</span></div>
-      <div class="keyfact"><b>${att.present}/${att.total || 0}</b><span>Attendance</span></div>
-      <div class="keyfact"><b style="font-size:14px;line-height:1.35">${esc(st.licence)}</b><span>Licence</span></div>
+      <div class="keyfact"><b>${att.present}/${att.total || 0}</b><span>Classes attended</span></div>
+      <div class="keyfact wide"><b>${esc(st.licence)}</b><span>Licence</span></div>
     </div>
 
     <div class="tabs" role="tablist">

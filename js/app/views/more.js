@@ -78,21 +78,26 @@ export function renderEnquiries(view){
     ${list.length ? `<div class="rows">${list.map(e => {
       const tone = e.status === 'New' ? 'pill-amber' : e.status === 'Converted' ? 'pill-green'
                  : e.status === 'Closed' ? '' : 'pill-blue';
-      return `<div class="row-item" style="align-items:flex-start">
-        <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(e.name))}</span>
-        <span class="row-main">
-          <b>${esc(e.name)}</b>
-          <span>${esc(courseLabel(e.interest))} · ${esc(e.phone)}</span>
-          <span>${dmy(e.date)}${e.note ? ' · ' + esc(e.note) : ''}</span>
-          <span style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+      return `<div class="enq-row">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <span class="avatar avatar-sm" aria-hidden="true">${esc(initials(e.name))}</span>
+          <div style="flex:1;min-width:0">
+            <b style="font-size:15px">${esc(e.name)}</b>
+            <p class="small muted" style="margin-top:2px">${esc(courseLabel(e.interest))} &nbsp;·&nbsp; ${esc(e.phone)}</p>
+            ${e.note ? `<p class="small" style="margin-top:4px">${esc(e.note)}</p>` : ''}
+          </div>
+          <div style="flex:none;text-align:right">
             <span class="pill ${tone}">${esc(e.status)}</span>
-            ${e.status === 'New' ? `<button class="btn btn-sm" data-called="${esc(e.id)}">Mark contacted</button>` : ''}
-            ${e.status !== 'Converted' && e.status !== 'Closed'
-              ? `<button class="btn btn-sm btn-primary" data-convert="${esc(e.id)}">Convert to student</button>
-                 <button class="btn btn-sm" data-close="${esc(e.id)}">Close</button>` : ''}
-            ${e.studentId ? `<a class="btn btn-sm" href="#/student/${esc(e.studentId)}">Open student</a>` : ''}
-          </span>
-        </span>
+            <p class="tiny muted" style="margin-top:5px">${dmy(e.date)}</p>
+          </div>
+        </div>
+        <div class="enq-actions">
+          ${e.status === 'New' ? `<button class="btn btn-sm" data-called="${esc(e.id)}">Mark contacted</button>` : ''}
+          ${e.status !== 'Converted' && e.status !== 'Closed'
+            ? `<button class="btn btn-sm btn-primary" data-convert="${esc(e.id)}">Convert to student</button>
+               <button class="btn btn-sm" data-close="${esc(e.id)}">Close</button>` : ''}
+          ${e.studentId ? `<a class="btn btn-sm" href="#/student/${esc(e.studentId)}">Open student</a>` : ''}
+        </div>
       </div>`; }).join('')}</div>`
     : emptyState('phone-call', 'No enquiries with this status.')}
     <p class="hr-note">Enquiries sent from the public website appear here.</p>`;
