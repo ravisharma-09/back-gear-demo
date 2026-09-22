@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
 <!-- Icons from Lucide (https://lucide.dev) - ISC licence. Built by build-icons.js -->
-<symbol id="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-  stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="9"/>
-  <circle cx="12" cy="12" r="2.6"/>
-  <path d="M3.1 12h6.3M14.6 12h6.3M12 14.6v6.3"/>
+<symbol id="brand-mark" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="9.35" fill="none" stroke="currentColor" stroke-width="3.3"/>
+  <path d="M4.15 12h4.6M15.25 12h4.6M12 15.25v4.6" stroke="currentColor" stroke-width="2.9" fill="none"/>
+  <circle cx="12" cy="12" r="3.55" fill="currentColor"/>
+  <circle cx="12" cy="12" r="2.75" fill="#ffffff"/>
+  <text x="12" y="14.5" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif" font-size="5.1" font-weight="800" fill="#e01d2b">L</text>
 </symbol>
 <symbol id="i-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7" /> <path d="M19 12H5" /></symbol>
 <symbol id="i-banknote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></symbol>

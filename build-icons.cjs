@@ -20,13 +20,15 @@ for (const name of ICONS) {
   parts.push(`<symbol id="i-${name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${inner.replace(/\s+/g, ' ')}</symbol>`);
 }
 
-/* The brand mark: a steering wheel, drawn on the same 24 grid as the icons so it
-   sits in the sprite and inherits currentColor on light and dark backgrounds. */
-const BRAND = `<symbol id="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-  stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="9"/>
-  <circle cx="12" cy="12" r="2.6"/>
-  <path d="M3.1 12h6.3M14.6 12h6.3M12 14.6v6.3"/>
+/* The Back Gear brand mark: a steering wheel with the red L plate at the hub,
+   redrawn from the school's own logo. The rim, spokes and hub take currentColor
+   so the mark works on white and on navy; the L stays red on both. */
+const BRAND = `<symbol id="brand-mark" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="9.35" fill="none" stroke="currentColor" stroke-width="3.3"/>
+  <path d="M4.15 12h4.6M15.25 12h4.6M12 15.25v4.6" stroke="currentColor" stroke-width="2.9" fill="none"/>
+  <circle cx="12" cy="12" r="3.55" fill="currentColor"/>
+  <circle cx="12" cy="12" r="2.75" fill="#ffffff"/>
+  <text x="12" y="14.5" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif" font-size="5.1" font-weight="800" fill="#e01d2b">L</text>
 </symbol>`;
 
 const sprite = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
