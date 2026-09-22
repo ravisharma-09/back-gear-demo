@@ -126,9 +126,11 @@ select.control{ appearance:none; background-image:url("data:image/svg+xml,%3Csvg
 .notice-green .icon{ color:var(--green) }
 
 /* ---------- demo ribbon ---------- */
-.demo-bar{ background:var(--navy); color:#cdd9e8; font-size:13px; text-align:center;
-  padding:7px 16px; letter-spacing:.01em }
-.demo-bar b{ color:#fff }
+/* a slim, single-line honesty strip - never allowed to wrap into a paragraph */
+.demo-bar{ background:var(--navy); color:#b8c7da; font-size:12.5px; text-align:center;
+  padding:6px 16px; letter-spacing:.005em; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; line-height:1.5 }
+.demo-bar b{ color:#fff; font-weight:600 }
 
 /* ---------- toast ---------- */
 .toast{ position:fixed; left:50%; bottom:88px; transform:translateX(-50%) translateY(8px);

@@ -14,28 +14,33 @@
 
 /* ---------- masthead ---------- */
 .masthead{ position:sticky; top:0; z-index:100; background:#fff; border-bottom:1px solid var(--line) }
-.masthead-row{ display:flex; align-items:center; gap:18px; min-height:70px; flex-wrap:wrap }
-.logo{ display:inline-flex; align-items:center; gap:11px; color:var(--ink); text-decoration:none; flex:none }
+.masthead-row{ display:flex; align-items:center; gap:22px; min-height:74px; flex-wrap:nowrap }
+.logo{ display:inline-flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none; flex:none }
 .logo:hover{ text-decoration:none }
-.logo-mark{ width:36px; height:36px; color:var(--blue); flex:none; stroke-width:2 }
-.logo-text b{ display:block; font-size:19px; font-weight:800; line-height:1.1; letter-spacing:-.02em }
-.logo-text small{ display:block; font-size:12.5px; color:var(--ink-2); letter-spacing:.04em }
+.logo-mark{ width:32px; height:32px; color:var(--blue); flex:none; stroke-width:2 }
+.logo-text b{ display:block; font-size:17.5px; font-weight:800; line-height:1.05; letter-spacing:-.025em }
+.logo-text small{ display:block; font-size:10.5px; color:var(--ink-3); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; margin-top:2px }
 .logo-light{ color:#fff } .logo-light .logo-mark{ color:#fff }
 .logo-light .logo-text small{ color:#9fb4cd }
 
-.masthead-contact{ display:flex; gap:20px; align-items:center; margin-left:auto;
-  font-size:14px; color:var(--ink-2); font-weight:500 }
-.masthead-contact a{ color:var(--ink-2); display:inline-flex; align-items:center; gap:6px }
-.masthead-contact span{ display:inline-flex; align-items:center; gap:6px }
-.masthead-contact a:hover{ color:var(--blue) }
-
-.site-nav{ display:flex; align-items:center; gap:22px; width:100%;
-  border-top:1px solid var(--line-2); padding:8px 0 }
-.site-nav a{ color:var(--ink-2); font-weight:600; font-size:15px; padding:6px 0 }
+.site-nav{ display:flex; align-items:center; gap:26px; margin-left:auto }
+.site-nav a{ color:var(--ink-2); font-weight:600; font-size:15px; white-space:nowrap;
+  line-height:1; padding:4px 0 }
 .site-nav a:hover{ color:var(--blue); text-decoration:none }
-.nav-book{ margin-left:auto; color:#fff !important }
-.nav-toggle{ display:none; width:46px; height:44px; border:1px solid var(--line);
-  border-radius:var(--r); background:#fff; cursor:pointer; align-items:center; justify-content:center }
+.nav-mobile-extra{ display:none }
+
+.masthead-actions{ display:flex; align-items:center; gap:16px; flex:none }
+.mast-phone{ display:inline-flex; align-items:center; gap:7px; color:var(--ink);
+  font-weight:600; font-size:14.5px; white-space:nowrap }
+.mast-phone .icon{ color:var(--blue) }
+.mast-phone:hover{ color:var(--blue); text-decoration:none }
+.nav-book{ color:#fff !important }
+.cta-short, .nav-menu-cta{ display:none }
+.nav-toggle{ display:none; width:44px; height:42px; border:1px solid var(--line);
+  border-radius:var(--r); background:#fff; cursor:pointer; align-items:center;
+  justify-content:center; color:var(--ink); margin-left:auto }
+.nav-toggle:hover{ background:var(--bg-2) }
 
 /* ---------- hero ---------- */
 .hero{ position:relative; min-height:520px; display:flex; align-items:center;
@@ -176,14 +181,36 @@
   .team{ grid-template-columns:1fr 1fr }
   .footer-grid{ grid-template-columns:1fr 1fr }
 }
-@media (max-width:760px){
-  .masthead-row{ min-height:62px; gap:12px }
-  .masthead-contact{ display:none }
-  .nav-toggle{ display:flex; margin-left:auto }
-  .site-nav{ display:none; flex-direction:column; align-items:stretch; gap:0; padding:6px 0 14px }
+@media (max-width:1080px){
+  .site-nav{ position:absolute; left:0; right:0; top:100%; background:#fff;
+    flex-direction:column; align-items:stretch; gap:0; margin:0;
+    border-bottom:1px solid var(--line); box-shadow:var(--shadow);
+    padding:6px 20px 16px; display:none; z-index:10 }
   .site-nav.open{ display:flex }
   .site-nav a{ padding:13px 2px; border-bottom:1px solid var(--line-2); font-size:16px }
-  .nav-book{ margin:12px 0 0; justify-content:center; border-bottom:0 }
+  .nav-mobile-extra{ display:flex; flex-direction:column }
+  .nav-toggle{ display:flex }
+  .masthead-row{ position:relative }
+}
+@media (max-width:860px){
+  /* the header keeps the brand, one short call to action and the menu */
+  .masthead-row{ min-height:64px; gap:12px }
+  .mast-phone{ display:none }
+  .masthead-actions{ gap:8px; margin-left:auto }
+  .nav-book{ height:40px; padding:0 14px; font-size:14px }
+  .cta-long{ display:none }
+  .cta-short{ display:inline }
+  .nav-menu-cta{ display:flex; margin-top:14px; color:#fff !important }
+  .logo-text b{ font-size:16px }
+  .logo-text small{ font-size:9.5px; letter-spacing:.11em }
+  .logo-mark{ width:29px; height:29px }
+}
+@media (max-width:420px){
+  /* at the narrowest widths the button moves into the menu entirely */
+  .masthead-actions .nav-book{ display:none }
+}
+@media (max-width:760px){
+  .site-nav{ padding:6px 16px 16px }
   .hero{ min-height:0 }
   .hero-inner{ padding-top:48px; padding-bottom:48px }
   .hero h1{ font-size:31px; max-width:none }

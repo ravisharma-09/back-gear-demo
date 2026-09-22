@@ -10,9 +10,7 @@
 </head>
 <body>
 
-<p class="demo-bar" role="note">
-  <b>Demo prototype</b> — sample content for client review. Not the live website.
-</p>
+<p class="demo-bar" role="note"><b>Demo prototype</b> — not the live website</p>
 
 <header class="masthead" id="masthead">
   <div class="shell masthead-row">
@@ -20,12 +18,6 @@
       <svg class="logo-mark" aria-hidden="true"><use href="/assets/icons.svg#brand-mark"/></svg>
       <span class="logo-text"><b>Back Gear</b><small>Driving School</small></span>
     </a>
-
-    <div class="masthead-contact">
-      <a href="tel:+919876543210"><svg class="icon icon-sm"><use href="/assets/icons.svg#i-phone"/></svg>+91 98765 43210</a>
-      <a href="#" data-wa><svg class="icon icon-sm"><use href="/assets/icons.svg#i-message-circle"/></svg>WhatsApp</a>
-      <span><svg class="icon icon-sm"><use href="/assets/icons.svg#i-map-pin"/></svg>Bathinda, Punjab</span>
-    </div>
 
     <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav">
       <svg class="icon icon-lg" aria-hidden="true"><use href="/assets/icons.svg#i-menu"/></svg>
@@ -40,8 +32,21 @@
       <a href="#instructors">Instructors</a>
       <a href="#faq">FAQ</a>
       <a href="#contact">Contact</a>
-      <a class="btn btn-primary btn-sm nav-book" href="#book">Book a Free Demo</a>
+      <span class="nav-mobile-extra">
+        <a href="tel:+919876543210">Call +91 98765 43210</a>
+        <a href="#" data-wa>WhatsApp us</a>
+        <a class="btn btn-primary btn-block nav-menu-cta" href="#book">Book a Free Demo</a>
+      </span>
     </nav>
+
+    <div class="masthead-actions">
+      <a class="mast-phone" href="tel:+919876543210">
+        <svg class="icon icon-sm" aria-hidden="true"><use href="/assets/icons.svg#i-phone"/></svg>
+        <span>+91 98765 43210</span>
+      </a>
+      <a class="btn btn-primary nav-book" href="#book">
+        <span class="cta-long">Book a Free Demo</span><span class="cta-short">Book Demo</span></a>
+    </div>
   </div>
 </header>
 
