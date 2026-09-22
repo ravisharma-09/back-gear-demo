@@ -41,13 +41,14 @@ export function renderLessons(view){
 
   view.innerHTML = `
     <div class="daypick">
-      <button class="btn" type="button" data-day="-1" aria-label="Previous day">${icon('chevron-left')}</button>
+      <button class="btn btn-icon" type="button" data-day="-1" aria-label="Previous day"
+        title="Previous day">${icon('chevron-left')}</button>
       <label class="sr-only" for="lsDate">Date</label>
       <input class="control" id="lsDate" type="date" value="${day}">
-      <button class="btn" type="button" data-day="1" aria-label="Next day">${icon('chevron-right')}</button>
+      <button class="btn btn-icon" type="button" data-day="1" aria-label="Next day"
+        title="Next day">${icon('chevron-right')}</button>
+      ${day !== TODAY ? `<button class="btn btn-sm" type="button" data-today>Today</button>` : ''}
     </div>
-    ${day !== TODAY ? `<p style="margin-bottom:12px">
-      <button class="btn btn-sm" type="button" data-today>Back to today</button></p>` : ''}
 
     ${lessons.length ? `<div class="rows">${lessons.map(l => {
       const st = getStudent(l.studentId), ins = getInstructor(l.instructorId);
@@ -59,10 +60,11 @@ export function renderLessons(view){
           <b>${fmtTime(l.time)} · ${esc(st?.name || 'Removed student')}</b>
           <span>${esc(ins?.name || 'No instructor')} · ${l.duration} minutes</span>
         </span>
-        <span class="row-side">
+        <span class="row-actions">
           <span class="pill ${tone}">${esc(l.status)}</span>
-          <button class="btn btn-sm btn-ghost" data-edit="${esc(l.id)}"
-            aria-label="Edit lesson for ${esc(st?.name || '')}">${icon('square-pen','icon icon-sm')}</button>
+          <button class="btn btn-sm btn-icon" type="button" data-edit="${esc(l.id)}"
+            aria-label="Edit the lesson for ${esc(st?.name || 'this student')}"
+            title="Edit lesson">${icon('square-pen','icon icon-sm')}</button>
         </span>
       </div>`; }).join('')}</div>
       <p class="hr-note">Tap the pencil to change a lesson's time or mark it completed.</p>`

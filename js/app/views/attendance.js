@@ -22,15 +22,14 @@ export function renderAttendance(view){
 
   view.innerHTML = `
     <div class="daypick">
-      <button class="btn" type="button" data-day="-1" aria-label="Previous day">
-        ${icon('chevron-left')}</button>
+      <button class="btn btn-icon" type="button" data-day="-1" aria-label="Previous day"
+        title="Previous day">${icon('chevron-left')}</button>
       <label class="sr-only" for="attDate">Date</label>
       <input class="control" id="attDate" type="date" value="${day}">
-      <button class="btn" type="button" data-day="1" aria-label="Next day">
-        ${icon('chevron-right')}</button>
+      <button class="btn btn-icon" type="button" data-day="1" aria-label="Next day"
+        title="Next day">${icon('chevron-right')}</button>
+      ${day !== TODAY ? `<button class="btn btn-sm" type="button" data-today>Today</button>` : ''}
     </div>
-    ${day !== TODAY ? `<p style="margin-bottom:12px">
-      <button class="btn btn-sm" type="button" data-today>Back to today</button></p>` : ''}
 
     ${isSunday(day) ? `<div class="notice">${icon('info')}
       <span>Sunday — the school is closed, so no classes are scheduled.</span></div>`

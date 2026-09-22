@@ -13,11 +13,7 @@
 <!-- ============ LOGIN ============ -->
 <div class="login" id="loginScreen">
   <main class="login-card">
-    <svg class="login-logo" viewBox="0 0 40 40" aria-hidden="true">
-      <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="3"/>
-      <circle cx="20" cy="20" r="5" fill="currentColor"/>
-      <path d="M20 3v9M6.5 28.5l8-4.5M33.5 28.5l-8-4.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-    </svg>
+    <svg class="login-logo" aria-hidden="true"><use href="/assets/icons.svg#brand-mark"/></svg>
     <h1>Back Gear</h1>
     <p class="login-sub">Driving School — Staff Login</p>
 
@@ -41,9 +37,8 @@
 
     <div class="login-demo">
       <p><b>Demo login</b> — prototype only, no real authentication</p>
-      <button class="btn btn-sm btn-block" type="button" id="fillDemo">
-        Use demo account &nbsp;·&nbsp; owner@backgear.demo / demo123
-      </button>
+      <p class="login-creds">owner@backgear.demo<br>demo123</p>
+      <button class="btn btn-block" type="button" id="fillDemo">Use the demo account</button>
     </div>
     <p class="login-back"><a href="/">&larr; Back to the website</a></p>
   </main>
@@ -55,11 +50,7 @@
 
   <aside class="sidebar" id="sidebar" aria-label="Sections">
     <div class="sidebar-brand">
-      <svg class="sidebar-logo" viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="3"/>
-        <circle cx="20" cy="20" r="5" fill="currentColor"/>
-        <path d="M20 3v9M6.5 28.5l8-4.5M33.5 28.5l-8-4.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-      </svg>
+      <svg class="sidebar-logo" aria-hidden="true"><use href="/assets/icons.svg#brand-mark"/></svg>
       <span><b>Back Gear</b><small>Management</small></span>
     </div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
@@ -89,7 +80,7 @@
   <div class="sheet-panel">
     <div class="sheet-head">
       <h2 id="sheetTitle">Form</h2>
-      <button class="btn btn-sm btn-ghost" type="button" data-close-sheet aria-label="Close">
+      <button class="btn btn-sm btn-icon" type="button" data-close-sheet aria-label="Close">
         <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-x"/></svg>
       </button>
     </div>
