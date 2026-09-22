@@ -34,20 +34,27 @@ export function renderAttendance(view){
     ${isSunday(day) ? `<div class="notice">${icon('info')}
       <span>Sunday — the school is closed, so no classes are scheduled.</span></div>`
     : `
-      <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
-        <div class="stat stat-green"><b>${present}</b><span>Present</span></div>
-        <div class="stat" style="--x:0"><b style="color:var(--red)">${absent}</b><span>Absent</span></div>
-        <div class="stat"><b>${students.length - marked.length}</b><span>Not marked</span></div>
+      <div class="att-progress">
+        <div class="att-progress-count">${marked.length} of ${students.length} students marked</div>
+        <div class="att-progress-detail">
+          <span class="clr-green">✓ ${present} Present</span>
+          <span class="clr-red">✗ ${absent} Absent</span>
+          <span class="clr-muted">· ${students.length - marked.length} Left</span>
+        </div>
       </div>
 
-      <div class="searchbar">
+      <div class="att-top-actions">
+        <button class="btn btn-block" type="button" data-all>${icon('check')}Mark all present</button>
+      </div>
+
+      <div class="searchbar" style="margin-bottom:12px">
         ${icon('search')}
         <label class="sr-only" for="attSearch">Search student</label>
-        <input class="control" id="attSearch" type="search" placeholder="Search student"
+        <input class="control" id="attSearch" type="search" placeholder="Search student name..."
                value="${esc(search)}" autocomplete="off">
       </div>
 
-      ${students.length ? `<div class="rows">${students.map(st => {
+      ${students.length ? `<div class="rows att-list">${students.map(st => {
         const c = courseById(st.courseId);
         const mark = draft[st.id] || '';
         return `<div class="att-row">
@@ -58,17 +65,15 @@ export function renderAttendance(view){
           </span>
           <span class="att-buttons">
             <button class="att-btn" type="button" data-mark="present" data-id="${esc(st.id)}"
-              aria-pressed="${mark === 'present'}" aria-label="Mark ${esc(st.name)} present">P</button>
+              aria-pressed="${mark === 'present'}" aria-label="Mark ${esc(st.name)} present">✓ Present</button>
             <button class="att-btn" type="button" data-mark="absent" data-id="${esc(st.id)}"
-              aria-pressed="${mark === 'absent'}" aria-label="Mark ${esc(st.name)} absent">A</button>
+              aria-pressed="${mark === 'absent'}" aria-label="Mark ${esc(st.name)} absent">Absent</button>
           </span>
         </div>`; }).join('')}</div>
 
         <div class="att-actions">
-          <button class="btn" type="button" data-all>Mark all present</button>
-          <button class="btn btn-primary" type="button" data-save>Save attendance</button>
-        </div>
-        <p class="hr-note">P = present, A = absent. Tap the same button again to clear it.</p>`
+          <button class="btn btn-primary btn-lg" type="button" data-save style="width:100%">${icon('save')}Save attendance for ${dmy(day)}</button>
+        </div>`
       : emptyState('users', 'No active student matches this search.')}
     `}`;
 
@@ -106,7 +111,7 @@ export function renderAttendance(view){
     if (e.target.closest('[data-all]')){
       for (const st of listStudents({ status:'Active' })) draft[st.id] = 'present';
       renderAttendance(view);
-      toast('All marked present — now tap Save attendance');
+      toast('All students marked present — remember to tap Save');
       return;
     }
     if (e.target.closest('[data-save]')){

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node serve.cjs",
     "icons": "node build-icons.cjs",
-    "test": "node test-data-layer.mjs"
+    "test": "node test-data-layer.mjs",
+    "app-icons": "node build-app-icons.cjs"
   },
   "keywords": [],
   "author": "",

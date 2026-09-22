@@ -15,6 +15,7 @@ import { renderFees } from './views/fees.js';
 import { renderLessons } from './views/lessons.js';
 import { renderInstructors, renderEnquiries, renderReports, renderSettings, renderMore }
   from './views/more.js';
+import { registerServiceWorker, onInstallChange } from './install.js';
 
 const DEMO_USER = { email:'owner@backgear.demo', password:'demo123', name:'Arjun Singh', role:'Owner' };
 const SESSION_KEY = 'backgear.demo.session';
@@ -156,5 +157,8 @@ onChange(() => { if (state.user) route(false); });
 
 /* ---------------- start ---------------- */
 wireSheet();
+registerServiceWorker();
+/* the install button appears the moment the browser says the app is installable */
+onInstallChange(() => { if (state.user) route(false); });
 const saved = readSession();
 if (saved){ state.user = saved; showApp(); } else showLogin();

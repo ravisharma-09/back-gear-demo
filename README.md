@@ -34,6 +34,34 @@ The login screen has a button that fills this in for you.
 
 ---
 
+## Installing it on a phone
+
+The management app is a Progressive Web App, so it can be installed to a home
+screen and opened like any other app.
+
+1. Start the server and find your machine's address on the wi-fi, for example
+   `http://192.168.1.5:5173/app/`.
+2. Open that address on the phone: **Chrome** on Android, **Safari** on iPhone.
+3. **Android** — a blue *Install* card appears on the app's Home screen, or use
+   **More → Install the app**.
+   **iPhone** — tap **Share → Add to Home Screen**. The app spells out these
+   steps for you.
+
+Once installed it opens full screen with its own icon, and keeps working with no
+signal because the app shell is cached by `app/sw.js`.
+
+> Installing needs a secure context. `localhost` counts, so local testing works.
+> Over plain `http://192.168.x.x` a phone browser may not offer to install —
+> serve it over HTTPS when you put it somewhere real.
+
+Rebuild the home-screen icons after changing the logo:
+
+```bash
+npm run app-icons
+```
+
+---
+
 ## The demo flow
 
 A ready-made script for showing the client:
@@ -67,6 +95,8 @@ A ready-made script for showing the client:
 - Add enquiries, change their status, convert one into a student
 - Download CSV reports
 - Website enquiries land in the management app
+- Installing to a home screen and running offline — this part is genuinely real,
+  not simulated
 
 **Deliberately not built yet**
 
@@ -82,7 +112,10 @@ A ready-made script for showing the client:
 
 ```
 index.html            public website
-app/index.html        management app shell
+app/
+  index.html          management app shell
+  manifest.webmanifest  makes the app installable
+  sw.js               caches the app shell so it opens offline
 css/
   base.css            design system: colours, buttons, forms, pills
   site.css            public website
@@ -96,8 +129,11 @@ js/
   app/
     main.js           demo login, navigation, routing
     ui.js             shared helpers: sheets, toasts, form fields, CSV
+    install.js        the install prompt and service worker registration
     views/            one file per screen
-assets/icons.svg      Lucide icons (ISC licence), built by build-icons.cjs
+assets/
+  icons.svg           Lucide icons + brand mark, built by build-icons.cjs
+  app-icon-*.png      home-screen icons, built by build-app-icons.cjs
 serve.cjs             a plain static file server — no API, no backend
 ```
 

@@ -5,6 +5,54 @@ import { listInstructors, studentsOf, listEnquiries, setEnquiryStatus, markConve
          addEnquiry, listStudents, feeSummary, allPayments, getStudent, attendanceCount,
          courseById, totalPending, resetDemo, COURSES } from '../../data/store.js';
 import { openAddStudent } from './students.js';
+import { installState, promptInstall, isIOS } from '../install.js';
+
+/* ---------------- installing the app ---------------- */
+const INSTALL_COPY = {
+  ready:       { title:'Install the app',  note:'Add Back Gear to your home screen and open it like any other app.' },
+  ios:         { title:'Add to Home Screen', note:'In Safari, tap Share then "Add to Home Screen".' },
+  installed:   { title:'App installed',    note:'You are running Back Gear as an installed app.' },
+  unavailable: { title:'Install the app',  note:'Open this page in Chrome, Edge or Safari on your phone to install it.' },
+};
+
+export function installRow(){
+  const st = installState();
+  const c = INSTALL_COPY[st];
+  const disabled = st === 'installed' || st === 'unavailable';
+  return `<button class="row-item" type="button" data-do="install"${disabled ? ' disabled' : ''}>
+    ${icon(st === 'installed' ? 'circle-check-big' : 'download')}
+    <span class="row-main"><b>${esc(c.title)}</b><span>${esc(c.note)}</span></span>
+    ${disabled ? '' : icon('chevron-right','icon row-chev')}
+  </button>`;
+}
+
+export async function handleInstall(){
+  const st = installState();
+  if (st === 'installed'){ toast('The app is already installed'); return; }
+  if (st === 'ios' || st === 'unavailable'){
+    openSheet({
+      title: isIOS() ? 'Add to Home Screen' : 'Install the app',
+      body: isIOS()
+        ? `<ol class="steps-list">
+             <li><div><b>Tap the Share button</b><span>The square with an arrow, at the bottom of Safari.</span></div></li>
+             <li><div><b>Choose "Add to Home Screen"</b><span>Scroll down the list to find it.</span></div></li>
+             <li><div><b>Tap Add</b><span>Back Gear then opens from your home screen like any other app.</span></div></li>
+           </ol>`
+        : `<p>Your browser has not offered to install this app yet.</p>
+           <ol class="steps-list" style="margin-top:14px">
+             <li><div><b>On a phone</b><span>Open this page in Chrome or Safari and try again.</span></div></li>
+             <li><div><b>On a laptop</b><span>In Chrome or Edge, use the install icon in the address bar.</span></div></li>
+           </ol>`,
+      submitLabel:'Got it',
+      onSave: () => {},
+    });
+    return;
+  }
+  const outcome = await promptInstall();
+  if (outcome === 'accepted') toast('Installing Back Gear…');
+  else if (outcome === 'dismissed') toast('Install cancelled');
+  else toast('Install is not available here', 'error');
+}
 
 /* ---------------- More menu (mobile) ---------------- */
 export function renderMore(view){
@@ -13,10 +61,16 @@ export function renderMore(view){
     ${SECONDARY.map(s => `<a class="row-item" href="#/${s.id}">
       ${icon(s.icon)}<span class="row-main"><b>${esc(s.label)}</b></span>
       ${icon('chevron-right','icon row-chev')}</a>`).join('')}
-    <button class="row-item" type="button" data-do="signout">
-      ${icon('log-out')}<span class="row-main"><b>Sign out</b></span></button>
+  </div>
+  <div class="block" style="margin-top:26px">
+    <div class="block-head"><h2>This app</h2></div>
+    <div class="rows">${installRow()}
+      <button class="row-item" type="button" data-do="signout">
+        ${icon('log-out')}<span class="row-main"><b>Sign out</b></span></button>
+    </div>
   </div>`;
-  view.addEventListener('click', e => {
+  view.addEventListener('click', async e => {
+    if (e.target.closest('[data-do="install"]')) return handleInstall();
     if (e.target.closest('[data-do="signout"]')){
       try { sessionStorage.removeItem('backgear.demo.session'); } catch {}
       location.reload();
@@ -222,6 +276,11 @@ export function renderSettings(view){
     </div>
 
     <div class="block">
+      <div class="block-head"><h2>This app</h2></div>
+      <div class="rows">${installRow()}</div>
+    </div>
+
+    <div class="block">
       <div class="block-head"><h2>Demo data</h2></div>
       <div class="rows">
         <button class="row-item" type="button" data-do="reset">
@@ -232,7 +291,8 @@ export function renderSettings(view){
       </div>
     </div>`;
 
-  view.addEventListener('click', e => {
+  view.addEventListener('click', async e => {
+    if (e.target.closest('[data-do="install"]')) return handleInstall();
     if (!e.target.closest('[data-do="reset"]')) return;
     openSheet({
       title:'Reset the demo?',

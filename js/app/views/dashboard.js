@@ -6,20 +6,12 @@ import { openAddStudent } from './students.js';
 import { openAddPayment } from './fees.js';
 import { openAddLesson } from './lessons.js';
 
-const greeting = () => {
-  const h = new Date().getHours();
-  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-};
-
 export function renderDashboard(view){
   setPage({ title:'Home', sub:`${dayName(TODAY)}, ${dmy(TODAY)}` });
   const s = todaySummary();
   const lessons = lessonsOn(TODAY);
 
   view.innerHTML = `
-    <p class="muted" style="margin:-2px 0 4px">${greeting()},</p>
-    <h2 style="font-size:24px;margin-bottom:18px">${esc(state.user?.name || 'there')}</h2>
-
     <div class="stats">
       <div class="stat">${icon('users')}<b>${s.students}</b><span>Total students</span></div>
       <div class="stat stat-green">${icon('calendar-check')}<b>${s.present}</b>
@@ -32,10 +24,10 @@ export function renderDashboard(view){
     <div class="block">
       <div class="block-head"><h2>Quick actions</h2></div>
       <div class="quick">
-        <button class="btn" data-do="add-student">${icon('user-plus')}Add student</button>
-        <a class="btn" href="#/attendance">${icon('calendar-check')}Mark attendance</a>
-        <button class="btn" data-do="add-payment">${icon('banknote')}Add payment</button>
-        <button class="btn" data-do="add-lesson">${icon('plus')}Add lesson</button>
+        <a class="btn btn-primary" href="#/attendance">${icon('calendar-check')}Mark Today's Attendance</a>
+        <button class="btn" data-do="add-student">${icon('user-plus')}Add new student</button>
+        <button class="btn" data-do="add-payment">${icon('banknote')}Record fee payment</button>
+        <button class="btn" data-do="add-lesson">${icon('plus')}Book a lesson</button>
       </div>
     </div>
 
