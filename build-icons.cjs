@@ -3,9 +3,31 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const ICONS = require('node:fs')
-  .readFileSync(require('node:path').join(__dirname, 'icons.list'), 'utf8')
-  .split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+/* Work out which icons are actually used by scanning the source, so the
+   sprite can never drift out of step with the code. Three ways an icon
+   is referenced: `#i-name` in HTML, `icon('name')` in JS, and `icon:'name'`
+   in a data table. */
+const SCAN_DIRS = ['js', 'app', 'css', '.'];
+function collectUsedIcons(){
+  const fsx = require('node:fs'), px = require('node:path');
+  const found = new Set();
+  const walk = dir => {
+    for (const entry of fsx.readdirSync(dir, { withFileTypes:true })){
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+      const full = px.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.(html|js|cjs|mjs|css)$/.test(entry.name) && entry.name !== 'build-icons.cjs'){
+        const text = fsx.readFileSync(full, 'utf8');
+        for (const m of text.matchAll(/#i-([a-z0-9-]+)/g)) found.add(m[1]);
+        for (const m of text.matchAll(/\bicon\(\s*'([a-z0-9-]+)'/g)) found.add(m[1]);
+        for (const m of text.matchAll(/\bicon:\s*'([a-z0-9-]+)'/g)) found.add(m[1]);
+      }
+    }
+  };
+  walk(px.join(__dirname));
+  return [...found].sort();
+}
+const ICONS = collectUsedIcons();
 
 const SRC = path.join(__dirname, 'node_modules', 'lucide-static', 'icons');
 const parts = [];

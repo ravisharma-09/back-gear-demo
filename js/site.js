@@ -1,233 +1,227 @@
 /* ==================================================================
-   Public website behaviour.
-   The booking form writes into the same demo store the management app
-   reads, so an enquiry sent here shows up under Enquiries.
+   Public website.
+   Everything it shows comes from js/config.js, and the booking form
+   writes into the same demo store the Admin Portal reads — so an
+   enquiry sent here appears under Enquiries in /app/.
    ================================================================== */
-import { BUSINESS, IMAGES } from './config.js';
+import { BUSINESS, IMAGES, COURSE_COPY, TRUST, STEPS, WHY, FLEET,
+         LICENCE_HELP, REVIEWS, TIME_SLOTS } from './config.js';
 import { COURSES } from './data/seed.js';
 import { addEnquiry, ValidationError } from './data/store.js';
 
-const $ = sel => document.querySelector(sel);
-const $$ = sel => document.querySelectorAll(sel);
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-const rupees = n => '₹' + Number(n).toLocaleString('en-IN');
+const ic = (n, cls = 'ic') => `<svg class="${cls}" aria-hidden="true"><use href="/assets/icons.svg#i-${n}"/></svg>`;
 
-/* ---------- photographs ---------- */
-function setPhoto(id, image){
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.alt = image.alt;
-  el.loading = id === 'heroPhoto' ? 'eager' : 'lazy';
-  el.src = image.src;
-  el.addEventListener('error', () => {
-    el.removeAttribute('src');
-    el.closest('.hero')?.classList.add('no-photo');
-    el.style.display = 'none';
-  }, { once:true });
+/* ---------- pictures ---------- */
+function paint(id, key){
+  const el = $(id), img = IMAGES[key];
+  if (!el || !img) return;
+  el.alt = img.alt;
+  el.width = img.w; el.height = img.h;
+  el.addEventListener('error', () => { el.style.visibility = 'hidden'; }, { once:true });
+  el.src = img.src;
 }
-setPhoto('heroPhoto', IMAGES.hero);
-setPhoto('aboutPhoto', IMAGES.about);
-setPhoto('licencePhoto', IMAGES.licence);
+paint('#heroImg', 'hero');
+paint('#roadsImg', 'roads');
+paint('#whyImg', 'why');
+paint('#licenceImg', 'licence');
 
-/* ---------- WhatsApp links ---------- */
-const waHref = 'https://wa.me/' + BUSINESS.whatsapp + '?text=' +
+/* ---------- phone and WhatsApp ---------- */
+const tel = 'tel:' + BUSINESS.phoneHref;
+const wa  = 'https://wa.me/' + BUSINESS.whatsapp + '?text=' +
   encodeURIComponent(`Hello ${BUSINESS.name}, I would like to know about driving classes.`);
-$$('[data-wa]').forEach(a => { a.href = waHref; a.target = '_blank'; a.rel = 'noopener'; });
-$('#year').textContent = new Date().getFullYear();
-
-/* ---------- masthead scroll effect ---------- */
-const masthead = $('#masthead');
-if (masthead){
-  const onScroll = () => {
-    if (window.scrollY > 20) masthead.classList.add('scrolled');
-    else masthead.classList.remove('scrolled');
-  };
-  window.addEventListener('scroll', onScroll, { passive:true });
-  onScroll();
-}
+$$('[data-call]').forEach(a => a.href = tel);
+$$('[data-wa]').forEach(a => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
 
 /* ---------- menu ---------- */
-const toggle = $('#navToggle'), nav = $('#siteNav');
-toggle.addEventListener('click', () => {
+const burger = $('#burger'), nav = $('#nav');
+burger.addEventListener('click', () => {
   const open = nav.classList.toggle('open');
-  toggle.setAttribute('aria-expanded', String(open));
+  burger.setAttribute('aria-expanded', String(open));
 });
 nav.addEventListener('click', e => {
-  if (e.target.tagName === 'A'){ nav.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); }
+  if (e.target.closest('a')){ nav.classList.remove('open'); burger.setAttribute('aria-expanded','false'); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && nav.classList.contains('open')){
+    nav.classList.remove('open'); burger.setAttribute('aria-expanded','false'); burger.focus();
+  }
 });
 
+/* ---------- trust strip ---------- */
+$('#trustStrip').innerHTML = TRUST.map(t => `
+  <div class="strip-item">${ic(t.icon)}
+    <div><b>${esc(t.title)}</b><span>${esc(t.note)}</span></div>
+  </div>`).join('');
+
 /* ---------- courses ---------- */
-const COURSE_PHOTO = {
-  'c-car30': IMAGES.courseCar, 'c-car15': IMAGES.courseAuto, 'c-refresh': IMAGES.courseRefr,
-  'c-two': IMAGES.courseTwo, 'c-ladies': IMAGES.courseLadies, 'c-comm': IMAGES.courseComm,
-};
-const COURSE_BLURB = {
-  'c-car30':  'Our most popular course. Everything from the first clutch press to driving in Bathinda traffic.',
-  'c-car15':  'A shorter course for quick learners, or for people who have driven a little before.',
-  'c-refresh':'You already hold a licence but have not driven for a while. Back to confidence in ten days.',
-  'c-two':    'Scooter and motorcycle training, including balance, road sense and helmet safety.',
-  'c-ladies': 'A women-only batch taught by a lady instructor, with pick-up and drop available.',
-  'c-comm':   'For taxi, cab and light transport work. Includes commercial licence paperwork guidance.',
-};
-$('#courseGrid').innerHTML = COURSES.map((c, idx) => {
-  const photo = COURSE_PHOTO[c.id] || IMAGES.courseCar;
-  const delayClass = `delay-${(idx % 3) + 1}`;
-  return `<article class="course-card reveal ${delayClass}">
-    <div class="course-card-media">
-      <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy" width="600" height="375">
-    </div>
-    <div class="body">
-      <h3>${esc(c.name)} &middot; ${c.days} Days</h3>
+$('#courseGrid').innerHTML = COURSES.map(c => {
+  const copy = COURSE_COPY[c.id];
+  if (!copy) return '';
+  const img = IMAGES[copy.image];
+  return `<article class="course">
+    <img src="${esc(img.src)}" alt="${esc(img.alt)}" width="${img.w}" height="${img.h}"
+         loading="lazy" decoding="async">
+    <div class="course-body">
+      <h3>${esc(copy.name)}</h3>
       <div class="course-meta">
-        <span class="pill pill-blue">${esc(c.vehicle)}</span>
-        <span class="pill">${c.days} classes</span>
+        <span class="chip chip-blue">${esc(copy.duration)}</span>
+        <span class="chip">${esc(copy.who)}</span>
+        ${BUSINESS.showPrices ? `<span class="chip">₹${c.fee.toLocaleString('en-IN')}</span>` : ''}
       </div>
-      <p>${esc(COURSE_BLURB[c.id] || '')}</p>
-      <div class="course-fee"><b>${rupees(c.fee)}</b><span>indicative fee</span></div>
-      <a class="btn btn-primary" href="#book" data-course="${esc(c.id)}">Book this course</a>
+      <p>${esc(copy.benefit)}</p>
+      <a class="btn btn-line" href="#book" data-course="${esc(c.id)}">Enquire</a>
     </div>
   </article>`;
 }).join('');
 
-/* clicking a course pre-selects it in the booking form */
+$('#feeNote').textContent = BUSINESS.showPrices
+  ? 'Fees shown are for the full course.'
+  : 'Fees depend on the course and the number of classes. Call us and we will tell you the exact amount, with nothing hidden.';
+
+/* choosing a course jumps to the form with it already selected */
 $('#courseGrid').addEventListener('click', e => {
   const link = e.target.closest('[data-course]');
   if (!link) return;
   $('#bkCourse').value = link.dataset.course;
-  setTimeout(() => $('#bkName').focus({ preventScroll:true }), 400);
+  setTimeout(() => $('#bkName').focus({ preventScroll:true }), 420);
 });
 
-/* ---------- instructors ---------- */
-const TEAM = [
-  { name:'Raj Kumar',      role:'Senior instructor', since:2016, langs:'Hindi, Punjabi',           teaches:'Car — beginners' },
-  { name:'Harpreet Singh', role:'Instructor',        since:2018, langs:'Punjabi, Hindi, English',  teaches:'Car, commercial' },
-  { name:'Simran Kaur',    role:'Lady instructor',   since:2020, langs:'Punjabi, Hindi',           teaches:'Ladies batch' },
-  { name:'Gurdeep Singh',  role:'Instructor',        since:2022, langs:'Punjabi, English',         teaches:'Two-wheeler' },
-];
-const initials = n => n.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-$('#teamList').innerHTML = TEAM.map((m, idx) => {
-  const delayClass = `delay-${idx + 1}`;
-  return `<li class="reveal ${delayClass}">
-    <span class="avatar" aria-hidden="true">${esc(initials(m.name))}</span>
-    <h3>${esc(m.name)}</h3>
-    <p class="role">${esc(m.role)}</p>
-    <dl>
-      <div><dt>Teaching</dt><dd>${esc(m.teaches)}</dd></div>
-      <div><dt>With us</dt><dd>since ${m.since}</dd></div>
-      <div><dt>Languages</dt><dd>${esc(m.langs)}</dd></div>
-    </dl>
-  </li>`;
-}).join('');
-$('#teamList').insertAdjacentHTML('afterend',
-  `<p class="team-note reveal">Instructor details shown are demo content for this prototype.</p>`);
+/* ---------- how it works ---------- */
+$('#journey').innerHTML = STEPS.map(s => `
+  <li><b>${esc(s.title)}</b><p>${esc(s.note)}</p></li>`).join('');
 
-/* ---------- FAQ ---------- */
-const FAQS = [
-  ['What is the minimum age to learn?',
-   'You must be 18 to learn in a car or on a geared two-wheeler, and 20 for a commercial licence. A learner licence is needed before road practice begins.'],
-  ['What documents do I need?',
-   'Aadhaar card, two passport photographs and proof of address. For the learner licence you also complete a Form 1 self-declaration — we help you fill it in.'],
-  ['How long does a course take?',
-   'The 30 day car course usually finishes in four to five weeks depending on the days you choose. The 15 day course and the 10 day refresher are shorter.'],
-  ['Do you help with the licence itself?',
-   'Yes. We guide you through the learner licence, book your slot, prepare you on the test route and accompany you on the day of the driving test.'],
-  ['Is there a lady instructor?',
-   'Yes. The ladies batch is taught by a lady instructor, and pick-up and drop is available for it.'],
-  ['What are the fees?',
-   'Fees depend on the course and the number of classes. Call us and we will give you the exact amount with nothing hidden.'],
-  ['Are the cars dual-control?',
-   'Every training car has a second brake and clutch on the instructor’s side, so you are safe from your first class.'],
-  ['Do you pick up from home?',
-   'We pick up and drop across most of Bathinda city. Tell us your area and we will confirm.'],
-];
-$('#faqList').innerHTML = FAQS.map(([q, a], i) => `
-  <details class="reveal delay-${(i % 4) + 1}" ${i === 0 ? ' open' : ''}>
-    <summary>${esc(q)}<svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-down"/></svg></summary>
-    <p class="answer">${esc(a)}</p>
-  </details>`).join('');
+/* ---------- why ---------- */
+$('#whyList').innerHTML = WHY.map(w => `
+  <li>${ic(w.icon)}<div><b>${esc(w.title)}</b><span>${esc(w.note)}</span></div></li>`).join('');
+
+/* ---------- fleet ---------- */
+$('#fleetGrid').innerHTML = FLEET.map(f => {
+  const img = IMAGES[f.image];
+  return `<article>
+    <img src="${esc(img.src)}" alt="${esc(img.alt)}" width="${img.w}" height="${img.h}"
+         loading="lazy" decoding="async">
+    <div class="fleet-body">
+      <h3>${esc(f.name)}</h3>
+      <div class="course-meta">${f.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
+      <p>${esc(f.note)}</p>
+    </div>
+  </article>`;
+}).join('');
+
+/* ---------- licence ---------- */
+$('#licenceList').innerHTML = LICENCE_HELP.map(l => `
+  <li><div><b>${esc(l.title)}</b><span>${esc(l.note)}</span></div></li>`).join('');
+
+/* ---------- reviews ---------- */
+$('#reviewList').innerHTML = REVIEWS.items.map(r => `
+  <article class="review">
+    ${REVIEWS.isSample ? '<span class="sample-tag">Sample</span>' : ''}
+    <span class="qm" aria-hidden="true">&ldquo;</span>
+    <p>${esc(r.text)}</p>
+    <footer><b>${esc(r.name)}</b><span>${esc(r.area)}</span></footer>
+  </article>`).join('');
+$('#reviewNote').textContent = REVIEWS.isSample
+  ? 'These are placeholders. Real reviews from Back Gear students will replace them before the site goes live.'
+  : '';
+
+/* ---------- contact ---------- */
+$('#contactGrid').innerHTML = `
+  <div class="contact-item">${ic('phone','ic ic-lg')}
+    <h3>Phone</h3>
+    <p><a class="cline" href="${tel}">${esc(BUSINESS.phone)}</a></p>
+    <div class="contact-acts"><a class="btn btn-line" href="${tel}">Call now</a></div>
+  </div>
+  <div class="contact-item">${ic('message-circle','ic ic-lg')}
+    <h3>WhatsApp</h3>
+    <p>Message us any time</p>
+    <div class="contact-acts"><a class="btn btn-line" data-wa href="#">Open WhatsApp</a></div>
+  </div>
+  <div class="contact-item">${ic('map-pin','ic ic-lg')}
+    <h3>Address</h3>
+    <p>${BUSINESS.addressLines.map(esc).join('<br>')}</p>
+    <div class="contact-acts">
+      <a class="btn btn-line" href="${esc(BUSINESS.mapsUrl)}" target="_blank" rel="noopener">View map</a>
+      <a class="btn btn-line" href="${esc(BUSINESS.directionsUrl)}" target="_blank" rel="noopener">Directions</a>
+    </div>
+  </div>
+  <div class="contact-item">${ic('clock','ic ic-lg')}
+    <h3>Opening hours</h3>
+    <p>${esc(BUSINESS.hours)}<br><span class="fine">${esc(BUSINESS.closed)}</span></p>
+  </div>`;
+$$('[data-wa]').forEach(a => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
+
+/* ---------- footer ---------- */
+$('#footCourses').innerHTML = COURSES
+  .filter(c => COURSE_COPY[c.id])
+  .map(c => `<li><a href="#courses">${esc(COURSE_COPY[c.id].name)}</a></li>`).join('');
+$('#footContact').innerHTML = `
+  <li><a href="${tel}">${esc(BUSINESS.phone)}</a></li>
+  <li><a href="mailto:${esc(BUSINESS.email)}">${esc(BUSINESS.email)}</a></li>
+  <li><a data-wa href="#">WhatsApp</a></li>
+  <li>${esc(BUSINESS.hours)}</li>`;
+$$('[data-wa]').forEach(a => { a.href = wa; a.target = '_blank'; a.rel = 'noopener'; });
+$('#copy').textContent = `© ${new Date().getFullYear()} ${BUSINESS.name}, ${BUSINESS.city}, ${BUSINESS.state}.`;
 
 /* ---------- booking form ---------- */
 $('#bkCourse').innerHTML =
   `<option value="">Not sure yet — please advise</option>` +
-  COURSES.map(c => `<option value="${esc(c.id)}">${esc(c.label)}</option>`).join('') +
+  COURSES.filter(c => COURSE_COPY[c.id])
+    .map(c => `<option value="${esc(c.id)}">${esc(COURSE_COPY[c.id].name)}</option>`).join('') +
   `<option value="licence">Licence help only</option>`;
+$('#bkTime').innerHTML = `<option value="">Any time</option>` +
+  TIME_SLOTS.map(t => `<option>${esc(t)}</option>`).join('');
 
-const form = $('#bookingForm');
-const showFieldError = (key, message) => {
-  const box = document.getElementById('err' + key);
-  const input = document.getElementById('bk' + key);
-  if (!box) return;
-  box.textContent = message || '';
-  box.hidden = !message;
+const form = $('#bookForm');
+function setError(key, message){
+  const box = $('#err' + key), input = $('#bk' + key);
+  if (box){ box.textContent = message || ''; box.hidden = !message; }
   if (input) input.setAttribute('aria-invalid', message ? 'true' : 'false');
-};
+}
 
 form.addEventListener('submit', e => {
   e.preventDefault();
-  showFieldError('Name', ''); showFieldError('Phone', '');
+  setError('Name', ''); setError('Phone', '');
+
   const data = Object.fromEntries(new FormData(form).entries());
-  const btn = $('#bkSubmit');
-  btn.disabled = true;
+  const name = (data.name || '').trim();
+  const phone = (data.phone || '').trim();
+  let bad = false;
+  if (name.length < 2){ setError('Name', 'Please tell us your name.'); bad = true; }
+  if (phone.replace(/\D/g,'').length < 10){ setError('Phone', 'Please enter a 10 digit phone number.'); bad = true; }
+  if (bad){ $(bad && name.length < 2 ? '#bkName' : '#bkPhone').focus(); return; }
+
+  /* everything the office needs, kept in the note so nothing is lost */
+  const extras = [];
+  if (data.timing) extras.push(`Prefers ${data.timing}`);
+  if (data.area)   extras.push(`Pickup: ${data.area.trim()}`);
+  if (data.note)   extras.push(data.note.trim());
+
+  const btn = $('#bkSend');
+  btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    addEnquiry({ name: data.name.trim(), phone: data.phone.trim(),
-                 interest: data.interest || '', note: data.note.trim() });
+    addEnquiry({ name, phone, interest: data.interest || '', note: extras.join(' · ') });
+    $('#doneTitle').textContent = `Thank you, ${name.split(' ')[0]}.`;
+    $('#doneText').textContent = `${BUSINESS.short} will contact you shortly on ${phone}.`;
     form.hidden = true;
-    $('#bookingDone').hidden = false;
-    $('#bookingDone').scrollIntoView({ behavior:'smooth', block:'center' });
+    $('#bookDone').hidden = false;
+    $('#bookDone').scrollIntoView({ behavior:'smooth', block:'center' });
   } catch (err){
-    if (err instanceof ValidationError){
-      if (err.fields.name)  showFieldError('Name', err.fields.name);
-      if (err.fields.phone) showFieldError('Phone', err.fields.phone);
-      const firstBad = form.querySelector('[aria-invalid="true"]');
-      firstBad?.focus();
+    if (err instanceof ValidationError && err.fields){
+      if (err.fields.name)  setError('Name', err.fields.name);
+      if (err.fields.phone) setError('Phone', err.fields.phone);
     } else {
-      showFieldError('Name', 'Something went wrong. Please call us instead.');
+      setError('Name', 'Something went wrong. Please call us instead.');
     }
-  } finally { btn.disabled = false; }
+  } finally {
+    btn.disabled = false; btn.textContent = 'Request a Callback';
+  }
 });
 
-$('#bookingAgain').addEventListener('click', () => {
-  form.reset(); form.hidden = false; $('#bookingDone').hidden = true;
+$('#bookAgain').addEventListener('click', () => {
+  form.reset(); form.hidden = false; $('#bookDone').hidden = true;
   $('#bkName').focus();
 });
-
-/* ---------- scroll reveal observer ---------- */
-function initScrollReveal(){
-  // Add reveal classes to key semantic sections if not present
-  $$('.section-head, .split-body, .split-media, .offers-grid article, .booking, .contact-list > div, .steps li').forEach((el, i) => {
-    if (!el.classList.contains('reveal') && !el.classList.contains('reveal-left') && !el.classList.contains('reveal-right')){
-      el.classList.add('reveal');
-      if (el.closest('.offers-grid') || el.closest('.contact-list') || el.closest('.steps')){
-        el.classList.add(`delay-${(i % 4) + 1}`);
-      }
-    }
-  });
-
-  const targets = $$('.reveal, .reveal-left, .reveal-right, .reveal-scale');
-  if (!('IntersectionObserver' in window)){
-    targets.forEach(el => el.classList.add('is-revealed'));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting){
-        entry.target.classList.add('is-revealed');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, {
-    rootMargin: '0px 0px -40px 0px',
-    threshold: 0.1
-  });
-
-  targets.forEach(el => observer.observe(el));
-}
-
-// Initialise scroll animations
-if (document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', initScrollReveal);
-} else {
-  initScrollReveal();
-}

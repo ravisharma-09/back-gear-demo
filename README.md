@@ -161,6 +161,19 @@ The data models already in place: `students`, `instructors`, `attendance`,
 
 ---
 
+## The public website
+
+`index.html`, `css/site.css` and `js/site.js` are **self-contained**. The site does
+not load `css/base.css`, so nothing about the public pages can affect the Admin or
+Trainer portals, or the other way round.
+
+All wording, photography, courses, reviews and contact details come from
+**`js/config.js`**. Edit that one file to change the site.
+
+Sections: header, hero, trust strip, courses, how training works, why Back Gear,
+training vehicles, licence assistance, reviews, booking, contact, closing call to
+action, footer. A sticky Call / WhatsApp / Book bar appears on phones.
+
 ## Photographs
 
 The website uses temporary stock photography from Unsplash (free for commercial use),
