@@ -14,9 +14,12 @@ function loadDraft(){
 export function renderAttendance(view){
   if (draft === null) loadDraft();
   const students = listStudents({ status:'Active', q:search });
-  const marked = Object.values(draft).filter(Boolean);
-  const present = marked.filter(m => m === 'present').length;
-  const absent  = marked.filter(m => m === 'absent').length;
+  /* Progress describes the whole day, not the search results, so the count
+     cannot read "18 of 6" while the list is filtered. */
+  const roll = search ? listStudents({ status:'Active' }) : students;
+  const marks = roll.map(st => draft[st.id]).filter(Boolean);
+  const present = marks.filter(m => m === 'present').length;
+  const absent  = marks.filter(m => m === 'absent').length;
 
   setPage({ title:'Attendance', sub:`${dayName(day)}, ${dmy(day)}` });
 
@@ -35,16 +38,17 @@ export function renderAttendance(view){
       <span>Sunday — the school is closed, so no classes are scheduled.</span></div>`
     : `
       <div class="att-progress">
-        <div class="att-progress-count">${marked.length} of ${students.length} students marked</div>
+        <div class="att-progress-count">${marks.length} of ${roll.length} students marked</div>
         <div class="att-progress-detail">
           <span class="clr-green">✓ ${present} Present</span>
           <span class="clr-red">✗ ${absent} Absent</span>
-          <span class="clr-muted">· ${students.length - marked.length} Left</span>
+          <span class="clr-muted">· ${roll.length - marks.length} Left</span>
         </div>
       </div>
 
       <div class="att-top-actions">
-        <button class="btn btn-block" type="button" data-all>${icon('check')}Mark all present</button>
+        <button class="btn btn-block" type="button" data-all>${icon('check')}${
+          search ? `Mark these ${students.length} present` : 'Mark all present'}</button>
       </div>
 
       <div class="searchbar" style="margin-bottom:12px">
@@ -109,9 +113,13 @@ export function renderAttendance(view){
       return;
     }
     if (e.target.closest('[data-all]')){
-      for (const st of listStudents({ status:'Active' })) draft[st.id] = 'present';
+      /* With a search on, this means the students on screen, not the whole school. */
+      const target = listStudents({ status:'Active', q:search });
+      for (const st of target) draft[st.id] = 'present';
       renderAttendance(view);
-      toast('All students marked present — remember to tap Save');
+      toast(search
+        ? `${target.length} students marked present — remember to tap Save`
+        : 'All students marked present — remember to tap Save');
       return;
     }
     if (e.target.closest('[data-save]')){
