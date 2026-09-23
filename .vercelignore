@@ -1,0 +1,12 @@
+# Only the files a browser needs are deployed.
+node_modules
+.git
+package.json
+package-lock.json
+serve.cjs
+build-icons.cjs
+build-app-icons.cjs
+test-data-layer.mjs
+test-install.mjs
+stitch-prompts.md
+README.md
