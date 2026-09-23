@@ -230,7 +230,7 @@ export function renderTrainers(view){
       $('#instPanel', view).scrollIntoView({ behavior:'smooth', block:'nearest' });
     }
   };
-  view.addEventListener('click', handle);
+  view.onclick = handle;
   $('#topActions').onclick = handle;
 }
 
@@ -334,7 +334,7 @@ export function renderVehicles(view){
     const rm = e.target.closest('[data-remove-vehicle]');
     if (rm) return removeVehicle(rm.dataset.removeVehicle);
   };
-  view.addEventListener('click', handle);
+  view.onclick = handle;
   $('#topActions').onclick = handle;
 }
 
@@ -418,10 +418,10 @@ export function renderRequests(view){
          <div class="class-list">${done.map(card).join('')}</div></div>` : ''}`
     : emptyState('circle-alert', 'No requests. Trainers can ask you to move a class from their app.');
 
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const b = e.target.closest('[data-done]');
     if (b){ resolveRequest(b.dataset.done); toast('Marked as handled'); }
-  });
+  };
 }
 
 /* ---------------- Enquiries ---------------- */
@@ -489,7 +489,7 @@ export function renderEnquiries(view){
     }
     if (e.target.closest('[data-do="add"]')) openAddEnquiry();
   };
-  view.addEventListener('click', handle);
+  view.onclick = handle;
   $('#topActions').onclick = handle;
 }
 
@@ -530,7 +530,7 @@ export function renderReports(view){
       </button>`).join('')}</div>
     <p class="hr-note">Each report downloads as a CSV file you can open in Excel.</p>`;
 
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const btn = e.target.closest('[data-report]');
     if (!btn) return;
     const kind = btn.dataset.report;
@@ -564,7 +564,7 @@ export function renderReports(view){
           e.status, e.note])));
     }
     toast('CSV downloaded');
-  });
+  };
 }
 
 /* ---------------- Settings ---------------- */

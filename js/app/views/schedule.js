@@ -161,7 +161,7 @@ export function renderSchedule(view){
       toast('Class cancelled');
     }
   };
-  view.addEventListener('click', handle);
+  view.onclick = handle;
   $('#topActions').onclick = handle;
 }
 

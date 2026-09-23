@@ -171,6 +171,8 @@ function route(scroll = true){
   markNav(state.route.name);
   const view = $('#view');
   view.innerHTML = '';
+  /* #view outlives every screen, so clear the handler the last one left behind */
+  view.onclick = null;
   try {
     table[state.route.name](view, state.route.id);
   } catch (err){

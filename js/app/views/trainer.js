@@ -36,7 +36,7 @@ export function renderTrainerToday(view){
     if (e.target.value){ day = e.target.value; renderTrainerToday(view); }
   });
 
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const step = e.target.closest('[data-day]');
     if (step){ day = addDays(day, Number(step.dataset.day)); renderTrainerToday(view); return; }
     if (e.target.closest('[data-today]')){ day = TODAY; renderTrainerToday(view); return; }
@@ -52,7 +52,7 @@ export function renderTrainerToday(view){
 
     const ask = e.target.closest('[data-ask]');
     if (ask) return openScheduleRequest(ask.dataset.ask);
-  });
+  };
 }
 
 function trainerCard(l){
@@ -171,9 +171,9 @@ export function renderTrainerProfile(view){
         Ask them and they will update it for you.</span></div>
     <p style="margin-top:20px"><button class="btn btn-block" data-do="signout">
       ${icon('log-out')}Sign out</button></p>`;
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     if (e.target.closest('[data-do="signout"]')) signOut();
-  });
+  };
 }
 
 /* The trainer's own students, nothing more. */

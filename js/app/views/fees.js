@@ -110,6 +110,6 @@ export function renderPayments(view){
       toast('CSV downloaded');
     }
   };
-  view.addEventListener('click', handle);
+  view.onclick = handle;
   $('#topActions').onclick = handle;
 }

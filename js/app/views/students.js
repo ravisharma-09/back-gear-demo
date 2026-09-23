@@ -74,11 +74,11 @@ export function renderStudents(view){
       again.focus(); try { again.setSelectionRange(pos, pos); } catch {}
     }, 200);
   });
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const chip = e.target.closest('[data-status]');
     if (chip){ filters.status = chip.dataset.status; renderStudents(view); return; }
     if (e.target.closest('[data-do="add"]')) openAddStudent();
-  });
+  };
   $('#topActions').onclick = e => { if (e.target.closest('[data-do="add"]')) openAddStudent(); };
 }
 
@@ -204,7 +204,7 @@ export function renderStudentProfile(view, id){
   const draw = () => { panel.innerHTML = tabContent(activeTab, st, course, instructor); };
   draw();
 
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const tab = e.target.closest('[data-tab]');
     if (tab){
       activeTab = tab.dataset.tab;
@@ -216,7 +216,7 @@ export function renderStudentProfile(view, id){
     if (e.target.closest('[data-do="pay"]')) openAddPayment(st.id);
     if (e.target.closest('[data-do="lesson"]')) openBookClass({ studentId: st.id });
     if (e.target.closest('[data-do="remove"]')) removeStudent(st);
-  });
+  };
   $('#topActions').onclick = e => { if (e.target.closest('[data-do="edit"]')) openEditStudent(st); };
 }
 

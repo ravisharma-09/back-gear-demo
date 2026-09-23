@@ -87,7 +87,7 @@ export function renderAdminHome(view){
     </div>
   `;
 
-  view.addEventListener('click', async e => {
+  view.onclick = async e => {
     const btn = e.target.closest('[data-do]');
     if (!btn) return;
     const what = btn.dataset.do;
@@ -96,7 +96,7 @@ export function renderAdminHome(view){
     if (what === 'add-payment')  openAddPayment();
     if (what === 'welcome-done'){ finishWelcome(); renderAdminHome(view); }
     if (what === 'welcome-demo'){ finishWelcome(); go('#/students'); }
-  });
+  };
 }
 
 function lessonRow(l){

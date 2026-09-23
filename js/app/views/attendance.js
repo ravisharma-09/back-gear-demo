@@ -96,7 +96,7 @@ export function renderAttendance(view){
     day = e.target.value; loadDraft(); renderAttendance(view);
   });
 
-  view.addEventListener('click', e => {
+  view.onclick = e => {
     const step = e.target.closest('[data-day]');
     if (step){ day = addDays(day, Number(step.dataset.day)); loadDraft(); renderAttendance(view); return; }
     if (e.target.closest('[data-today]')){ day = TODAY; loadDraft(); renderAttendance(view); return; }
@@ -118,5 +118,5 @@ export function renderAttendance(view){
       saveAttendanceDay(day, draft);
       toast(`Attendance saved for ${dmy(day)}`);
     }
-  });
+  };
 }
