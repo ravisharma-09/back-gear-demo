@@ -1,317 +1,629 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Back Gear Driving School — Driving Classes in Bathinda, Punjab</title>
-<meta name="description" content="Professional driving training in Bathinda. Dual-control cars, patient instructors, morning and evening batches, and complete learner and driving licence guidance.">
-<meta name="theme-color" content="#0E1B2E">
-<meta property="og:title" content="Back Gear Driving School, Bathinda">
-<meta property="og:description" content="Practical road training, patient instructors and complete licence guidance.">
-<meta property="og:type" content="website">
-<link rel="stylesheet" href="/css/site.css">
-</head>
-<body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Back Gear Driving School — Driving Classes in Bathinda, Punjab
+    </title>
+    <meta
+      name="description"
+      content="Professional driving training in Bathinda. Dual-control cars, patient instructors, morning and evening batches, and complete learner and driving licence guidance."
+    />
+    <meta name="theme-color" content="#18221f" />
+    <meta property="og:title" content="Back Gear Driving School, Bathinda" />
+    <meta
+      property="og:description"
+      content="Practical road training, patient instructors and complete licence guidance."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/site.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
 
-<a class="skip" href="#main">Skip to content</a>
-
-<p class="ribbon" role="note"><b>Demo prototype</b> — sample content for client review</p>
-
-<!-- ================= HEADER ================= -->
-<header class="head" id="head">
-  <div class="shell head-in">
-    <a class="brand" href="#top" aria-label="Back Gear Driving School, home">
-      <svg class="brand-mark" aria-hidden="true"><use href="/assets/icons.svg#brand-mark"/></svg>
-      <span class="brand-words"><b>BACK<i>GEAR</i></b><small>Driving School</small></span>
-    </a>
-
-    <nav class="nav" id="nav" aria-label="Main">
-      <a href="#courses">Courses</a>
-      <a href="#how">How It Works</a>
-      <a href="#licence">Licence Help</a>
-      <a href="#why">Why Back Gear</a>
-      <a href="#reviews">Reviews</a>
-      <a href="#contact">Contact</a>
-      <span class="nav-only-mobile">
-        <a class="btn btn-line" data-call href="#">Call the school</a>
-        <a class="btn btn-solid" href="#book">Book a Class</a>
-        <a class="nav-staff" href="/app/">Staff Login</a>
-      </span>
-    </nav>
-
-    <div class="head-acts">
-      <a class="btn btn-line btn-call" data-call href="#">
-        <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-phone"/></svg>
-        <span class="btn-call-text">Call</span></a>
-      <a class="btn btn-solid" href="#book">Book a Class</a>
-      <a class="staff" href="/app/">Staff Login</a>
-      <button class="burger" id="burger" aria-expanded="false" aria-controls="nav">
-        <span class="sr">Menu</span>
-        <svg class="ic ic-lg" aria-hidden="true"><use href="/assets/icons.svg#i-menu"/></svg>
-      </button>
-    </div>
-  </div>
-</header>
-
-<main id="main">
-<div id="top"></div>
-
-<!-- ================= HERO ================= -->
-<section class="hero">
-  <div class="shell hero-in">
-    <div class="hero-copy">
-      <p class="kicker">Professional driving training in Bathinda</p>
-      <h1>Learn to Drive<br>With Confidence.</h1>
-      <p class="lede">Practical road training, patient instructors and complete licence
-        guidance — all managed around your schedule.</p>
-      <div class="hero-acts">
-        <a class="btn btn-solid btn-lg" href="#book">Book a Trial Class</a>
-        <a class="btn btn-line btn-lg" data-call href="#">
-          <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-phone"/></svg>Call Now</a>
-      </div>
-      <ul class="hero-points">
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-shield-check"/></svg>Dual-control training cars</li>
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-clock"/></svg>Morning and evening slots</li>
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-languages"/></svg>Hindi, Punjabi and English</li>
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-book-open"/></svg>Licence assistance</li>
-      </ul>
-    </div>
-
-    <figure class="hero-figure">
-      <img id="heroImg" alt="" width="1100" height="1375" fetchpriority="high" decoding="async">
-      <figcaption class="hero-badge">
-        <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-calendar-days"/></svg>
-        <span><b>Morning &amp; evening batches</b>Six days a week</span>
-      </figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- ================= TRUST STRIP ================= -->
-<section class="strip" aria-label="What you get">
-  <div class="shell strip-in" id="trustStrip"></div>
-</section>
-
-<!-- ================= COURSES ================= -->
-<section class="band" id="courses">
-  <div class="shell">
-    <header class="lead">
-      <p class="eyebrow">Courses</p>
-      <h2>Choose your training</h2>
-      <p>Six ways to learn. Not sure which fits you? Call us and we will say so honestly.</p>
-    </header>
-    <div class="courses" id="courseGrid"></div>
-    <p class="fine" id="feeNote"></p>
-  </div>
-</section>
-
-<!-- ================= HOW IT WORKS ================= -->
-<section class="band band-dark" id="how">
-  <div class="shell">
-    <header class="lead lead-light">
-      <p class="eyebrow">How training works</p>
-      <h2>From your first call to your driving test</h2>
-    </header>
-    <ol class="journey" id="journey"></ol>
-    <figure class="journey-figure">
-      <img id="roadsImg" alt="" width="1200" height="675" loading="lazy" decoding="async">
-    </figure>
-  </div>
-</section>
-
-<!-- ================= WHY ================= -->
-<section class="band" id="why">
-  <div class="shell split">
-    <figure class="split-media">
-      <img id="whyImg" alt="" width="1000" height="750" loading="lazy" decoding="async">
-    </figure>
-    <div class="split-copy">
-      <p class="eyebrow">Why Back Gear</p>
-      <h2>Training that takes its time with you</h2>
-      <p class="para">Most people do not struggle because driving is hard. They struggle because
-        somebody rushed them. We teach the way we would want our own family taught.</p>
-      <ul class="whys" id="whyList"></ul>
-    </div>
-  </div>
-</section>
-
-<!-- ================= FLEET ================= -->
-<section class="band band-tint" id="fleet">
-  <div class="shell">
-    <header class="lead">
-      <p class="eyebrow">Training vehicles</p>
-      <h2>Cars set up for learning</h2>
-      <p>Every training vehicle has dual controls and is serviced regularly.</p>
-    </header>
-    <div class="fleet" id="fleetGrid"></div>
-  </div>
-</section>
-
-<!-- ================= LICENCE ================= -->
-<section class="band" id="licence">
-  <div class="shell split split-flip">
-    <figure class="split-media">
-      <img id="licenceImg" alt="" width="1000" height="750" loading="lazy" decoding="async">
-    </figure>
-    <div class="split-copy">
-      <p class="eyebrow">Licence assistance</p>
-      <h2>We help with the paperwork</h2>
-      <p class="para">Applying for a licence means forms, documents and appointments. We take
-        that part off your hands so you can concentrate on driving.</p>
-      <ol class="licence-list" id="licenceList"></ol>
-      <p class="fine">We guide and prepare you for the test. Whether a licence is granted is
-        decided by the RTO, not by us.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= REVIEWS ================= -->
-<section class="band band-tint" id="reviews">
-  <div class="shell">
-    <header class="lead">
-      <p class="eyebrow">Reviews</p>
-      <h2>What students say</h2>
-    </header>
-    <div class="reviews" id="reviewList"></div>
-    <p class="fine" id="reviewNote"></p>
-  </div>
-</section>
-
-<!-- ================= BOOKING ================= -->
-<section class="band band-dark" id="book">
-  <div class="shell book-in">
-    <div class="book-copy">
-      <p class="eyebrow">Book a class</p>
-      <h2>Request a callback</h2>
-      <p>Tell us how to reach you and what you want to learn. Somebody from the office
-        will call you back the same working day.</p>
-      <ul class="book-points">
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-check"/></svg>No payment to enquire</li>
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-check"/></svg>Trial class before you decide</li>
-        <li><svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-check"/></svg>We only use your number for this</li>
-      </ul>
-    </div>
-
-    <div class="book-card">
-      <form id="bookForm" novalidate>
-        <div class="grid2">
-          <p class="fld">
-            <label for="bkName">Full name</label>
-            <input id="bkName" name="name" autocomplete="name" required aria-describedby="errName">
-            <span class="err" id="errName" hidden></span>
-          </p>
-          <p class="fld">
-            <label for="bkPhone">Phone number</label>
-            <input id="bkPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
-                   placeholder="98765 43210" required aria-describedby="errPhone">
-            <span class="err" id="errPhone" hidden></span>
-          </p>
-        </div>
-        <div class="grid2">
-          <p class="fld">
-            <label for="bkCourse">Course</label>
-            <select id="bkCourse" name="interest"></select>
-          </p>
-          <p class="fld">
-            <label for="bkTime">Preferred timing</label>
-            <select id="bkTime" name="timing"></select>
-          </p>
-        </div>
-        <p class="fld">
-          <label for="bkArea">Pickup area <span class="opt">optional</span></label>
-          <input id="bkArea" name="area" placeholder="Model Town, Bathinda">
-        </p>
-        <p class="fld">
-          <label for="bkMsg">Anything else <span class="opt">optional</span></label>
-          <textarea id="bkMsg" name="note" rows="3" placeholder="I have never driven before"></textarea>
-        </p>
-        <button class="btn btn-solid btn-lg btn-wide" type="submit" id="bkSend">Request a Callback</button>
-      </form>
-
-      <div class="book-done" id="bookDone" hidden>
-        <span class="tick"><svg class="ic ic-lg" aria-hidden="true"><use href="/assets/icons.svg#i-check"/></svg></span>
-        <h3 id="doneTitle">Thank you.</h3>
-        <p id="doneText"></p>
-        <p class="demo-hint">
-          <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-info"/></svg>
-          <span>In this demo your enquiry went straight into the management app.
-            Open <a href="/app/">Staff Login</a> and look under <b>Enquiries</b>.</span></p>
-        <button class="btn btn-line" id="bookAgain" type="button">Send another</button>
+    <div class="ribbon" role="region" aria-label="School information">
+      <div class="shell ribbon-in">
+        <span
+          >Bathinda, Punjab <span aria-hidden="true">↗</span> &nbsp; Your next
+          chapter starts here.</span
+        ><span
+          >Mon–Sat · 6 AM–7 PM
+          <span class="demo-label">Demo website</span></span
+        >
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ================= CONTACT ================= -->
-<section class="band" id="contact">
-  <div class="shell">
-    <header class="lead">
-      <p class="eyebrow">Contact</p>
-      <h2>Come and see us</h2>
-      <p>Walk in on any working day, or call and we will answer your questions.</p>
+    <!-- ================= HEADER ================= -->
+    <header class="head" id="head">
+      <div class="shell head-in">
+        <a
+          class="brand"
+          href="#top"
+          aria-label="Back Gear Driving School, home"
+        >
+          <svg class="brand-mark" aria-hidden="true">
+            <use href="/assets/icons.svg#brand-mark" />
+          </svg>
+          <span class="brand-words"
+            ><b>BACK<i>GEAR</i></b
+            ><small>Driving School</small></span
+          >
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Main">
+          <a href="#courses">Courses</a>
+          <a href="#how">How It Works</a>
+          <a href="#licence">Licence Help</a>
+          <a href="#why">Why Back Gear</a>
+          <a href="#faq">FAQs</a>
+          <a href="#contact">Contact</a>
+          <span class="nav-only-mobile">
+            <a class="btn btn-line" data-call href="#">Call the school</a>
+            <a class="btn btn-solid" href="#book">Book a Class</a>
+            <a class="nav-staff" href="/app/">Staff Login</a>
+          </span>
+        </nav>
+
+        <div class="head-acts">
+          <a class="btn btn-line btn-call" data-call href="#">
+            <svg class="ic" aria-hidden="true">
+              <use href="/assets/icons.svg#i-phone" />
+            </svg>
+            <span class="btn-call-text">Call</span></a
+          >
+          <a class="btn btn-solid" href="#book">Book a Class</a>
+          <a class="staff" href="/app/">Staff Login</a>
+          <button
+            class="burger"
+            id="burger"
+            aria-expanded="false"
+            aria-controls="nav"
+          >
+            <span class="sr">Menu</span>
+            <svg class="ic ic-lg" aria-hidden="true">
+              <use href="/assets/icons.svg#i-menu" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </header>
-    <div class="contact" id="contactGrid"></div>
-  </div>
-</section>
 
-<!-- ================= FINAL CTA ================= -->
-<section class="final">
-  <div class="shell final-in">
-    <h2>Ready to get behind the wheel?</h2>
-    <p>Book a trial class and see how we teach before you decide anything.</p>
-    <div class="final-acts">
-      <a class="btn btn-solid btn-lg" href="#book">Book a Trial Class</a>
-      <a class="btn btn-ghost btn-lg" data-call href="#">Call Back Gear</a>
-    </div>
-  </div>
-</section>
+    <main id="main">
+      <div id="top"></div>
 
-</main>
+      <!-- ================= HERO ================= -->
+      <section class="hero" aria-labelledby="heroTitle">
+        <figure class="hero-figure">
+          <img
+            id="heroImg"
+            alt=""
+            width="1600"
+            height="1000"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </figure>
+        <div class="hero-shade"></div>
+        <div class="shell hero-in">
+          <div class="hero-copy">
+            <p class="kicker">
+              <span class="status-dot"></span> YOUR LOCAL DRIVING SCHOOL ·
+              BATHINDA
+            </p>
+            <h1 id="heroTitle">
+              Good drivers<br />start with<br /><em>great guidance.</em>
+            </h1>
+            <p class="lede">
+              From “I can’t” to “I’ve got this.” Patient instructors,<br
+                class="desktop-break"
+              />
+              real road practice, and a little confidence at every turn.
+            </p>
+            <div class="hero-acts">
+              <a class="btn btn-solid btn-lg" href="#book"
+                >Let’s get you driving <span aria-hidden="true">↗</span></a
+              >
+              <a class="hero-explore" href="#courses"
+                >Explore our courses <span aria-hidden="true">↓</span></a
+              >
+            </div>
+            <div class="hero-footnote">
+              <span class="learner-sign" aria-hidden="true">L</span
+              ><span
+                >First time behind the wheel?<br /><strong
+                  >You’re in the right place.</strong
+                ></span
+              >
+            </div>
+          </div>
+          <div class="hero-side">
+            <span class="hero-coordinate"
+              >BATHINDA, PUNJAB · YOUR LOCAL DRIVING SCHOOL</span
+            >
+            <div class="hero-note">
+              <span class="note-icon" aria-hidden="true">↗</span>
+              <p>A little practice.<br />A whole new freedom.</p>
+              <a href="#how"
+                >Your journey starts here <span aria-hidden="true">→</span></a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="hero-bottom shell">
+          <span>YOUR ROAD. YOUR PACE.</span
+          ><a href="#courses"
+            >SCROLL TO EXPLORE <span aria-hidden="true">↓</span></a
+          >
+        </div>
+      </section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="foot">
-  <div class="shell foot-grid">
-    <div class="foot-brand">
-      <a class="brand brand-light" href="#top">
-        <svg class="brand-mark" aria-hidden="true"><use href="/assets/icons.svg#brand-mark"/></svg>
-        <span class="brand-words"><b>BACK<i>GEAR</i></b><small>Driving School</small></span>
-      </a>
-      <p class="foot-note">Driving training and licence guidance in Bathinda, Punjab.
-        Dual-control cars, patient instructors and batches that fit around your work.</p>
-    </div>
-    <nav aria-label="Footer">
-      <h3>Pages</h3>
-      <ul><li><a href="#courses">Courses</a></li><li><a href="#how">How it works</a></li>
-        <li><a href="#licence">Licence help</a></li><li><a href="#why">Why Back Gear</a></li>
-        <li><a href="#contact">Contact</a></li></ul>
+      <!-- ================= TRUST STRIP ================= -->
+      <section class="strip" aria-label="What you get">
+        <div class="shell strip-in" id="trustStrip"></div>
+      </section>
+
+      <!-- ================= COURSES ================= -->
+      <section class="band" id="courses">
+        <div class="shell">
+          <header class="lead">
+            <p class="eyebrow">01 / FIND YOUR STARTING POINT</p>
+            <h2>
+              Different journeys.<br /><span class="muted-heading"
+                >Same open road.</span
+              >
+            </h2>
+            <p>
+              Your first drive or a fresh start. There’s a course for wherever
+              you are right now.
+            </p>
+          </header>
+          <div class="course-filters" role="group" aria-label="Filter courses">
+            <button
+              type="button"
+              class="filter active"
+              data-filter="all"
+              aria-pressed="true"
+            >
+              All courses <span>06</span></button
+            ><button
+              type="button"
+              class="filter"
+              data-filter="car"
+              aria-pressed="false"
+            >
+              Car driving</button
+            ><button
+              type="button"
+              class="filter"
+              data-filter="two"
+              aria-pressed="false"
+            >
+              Two-wheeler</button
+            ><button
+              type="button"
+              class="filter"
+              data-filter="comm"
+              aria-pressed="false"
+            >
+              Commercial
+            </button>
+          </div>
+          <p class="sr" id="courseStatus" role="status"></p>
+          <div class="courses" id="courseGrid"></div>
+          <p class="fine" id="feeNote"></p>
+        </div>
+      </section>
+
+      <!-- ================= HOW IT WORKS ================= -->
+      <section class="band band-dark" id="how">
+        <div class="shell">
+          <header class="lead lead-light">
+            <p class="eyebrow">02 / ONE TURN AT A TIME</p>
+            <h2>A simple route to<br />your independence.</h2>
+          </header>
+          <ol class="journey" id="journey"></ol>
+          <figure class="journey-figure">
+            <img
+              id="roadsImg"
+              alt=""
+              width="1200"
+              height="675"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <!-- ================= WHY ================= -->
+      <section class="band" id="why">
+        <div class="shell split">
+          <figure class="split-media">
+            <img
+              id="whyImg"
+              alt=""
+              width="1000"
+              height="750"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div class="split-copy">
+            <p class="eyebrow">03 / GOOD PEOPLE. BETTER DRIVERS.</p>
+            <h2>
+              Less nerves.<br />More
+              <span class="accent-word">“I’ve got this.”</span>
+            </h2>
+            <p class="para">
+              Most people do not struggle because driving is hard. They struggle
+              because somebody rushed them. We teach the way we would want our
+              own family taught.
+            </p>
+            <ul class="whys" id="whyList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FLEET ================= -->
+      <section class="band band-tint" id="fleet">
+        <div class="shell">
+          <header class="lead">
+            <p class="eyebrow">04 / MEET YOUR CLASSROOM</p>
+            <h2>Made for the road.<br />Set up for you.</h2>
+            <p>
+              Every training vehicle has dual controls and is serviced
+              regularly.
+            </p>
+          </header>
+          <div class="fleet" id="fleetGrid"></div>
+        </div>
+      </section>
+
+      <!-- ================= LICENCE ================= -->
+      <section class="band" id="licence">
+        <div class="shell split split-flip">
+          <figure class="split-media">
+            <img
+              id="licenceImg"
+              alt=""
+              width="1000"
+              height="750"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div class="split-copy">
+            <p class="eyebrow">05 / THE NEXT MILESTONE</p>
+            <h2>
+              The road is exciting.<br />The paperwork?<br /><span
+                class="muted-heading"
+                >We’ll help with that.</span
+              >
+            </h2>
+            <p class="para">
+              Applying for a licence means forms, documents and appointments. We
+              take that part off your hands so you can concentrate on driving.
+            </p>
+            <ol class="licence-list" id="licenceList"></ol>
+            <p class="fine">
+              We guide and prepare you for the test. Whether a licence is
+              granted is decided by the RTO, not by us.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FAQ ================= -->
+      <section class="band band-tint" id="faq">
+        <div class="shell faq-in">
+          <header class="lead">
+            <p class="eyebrow">06 / BEFORE YOU GET GOING</p>
+            <h2>A few things<br />you might<br />be wondering.</h2>
+            <p>New to all of this? That’s completely okay.</p>
+            <a class="text-link" data-call href="#"
+              >Let’s talk it through <span aria-hidden="true">↗</span></a
+            >
+          </header>
+          <div class="faq-list">
+            <details>
+              <summary>Can I join if I’ve never driven before?</summary>
+              <p>
+                Absolutely. Our beginner course starts with the controls, moving
+                off and stopping. You’ll build up to road practice at a pace
+                that feels comfortable.
+              </p>
+            </details>
+            <details>
+              <summary>Can I fit classes around work or college?</summary>
+              <p>
+                We offer morning and evening slots, Monday to Saturday. Choose a
+                preferred time in the booking form and the school will confirm
+                availability.
+              </p>
+            </details>
+            <details>
+              <summary>Do I need my own car?</summary>
+              <p>
+                No. Training vehicles are provided, with dual controls for car
+                lessons. Speak to the school about manual or automatic
+                availability.
+              </p>
+            </details>
+            <details>
+              <summary>Will you help me get my driving licence?</summary>
+              <p>
+                We offer guidance on documents, learner licence applications and
+                test preparation. The RTO makes the final decision on granting a
+                licence.
+              </p>
+            </details>
+            <details>
+              <summary>How much does a course cost?</summary>
+              <p>
+                Fees depend on your course and the number of lessons. Request a
+                callback for the full price before you decide. There is no
+                payment to enquire.
+              </p>
+            </details>
+            <details>
+              <summary>Is pickup available in my area?</summary>
+              <p>
+                Pickup assistance is available across most of Bathinda. Add your
+                area to the booking form so the school can check the route with
+                you.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= BOOKING ================= -->
+      <section class="band band-dark" id="book">
+        <div class="shell book-in">
+          <div class="book-copy">
+            <p class="eyebrow">07 / YOUR FIRST STEP</p>
+            <h2>
+              That first drive?<br /><span>Let’s make<br />it happen.</span>
+            </h2>
+            <p>
+              Tell us how to reach you and what you want to learn. Somebody from
+              the office will call you back the same working day.
+            </p>
+            <ul class="book-points">
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="/assets/icons.svg#i-check" /></svg
+                >No payment to enquire
+              </li>
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="/assets/icons.svg#i-check" /></svg
+                >Trial class before you decide
+              </li>
+              <li>
+                <svg class="ic" aria-hidden="true">
+                  <use href="/assets/icons.svg#i-check" /></svg
+                >We only use your number for this
+              </li>
+            </ul>
+          </div>
+
+          <div class="book-card">
+            <div class="form-heading">
+              <h3>Let’s find your course.</h3>
+              <p>Leave your details. We’ll take it from here.</p>
+            </div>
+            <form id="bookForm" novalidate>
+              <div class="grid2">
+                <p class="fld">
+                  <label for="bkName">Full name</label>
+                  <input
+                    id="bkName"
+                    name="name"
+                    autocomplete="name"
+                    required
+                    aria-describedby="errName"
+                  />
+                  <span class="err" id="errName" hidden></span>
+                </p>
+                <p class="fld">
+                  <label for="bkPhone">Phone number</label>
+                  <input
+                    id="bkPhone"
+                    name="phone"
+                    type="tel"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    placeholder="98765 43210"
+                    required
+                    aria-describedby="errPhone"
+                  />
+                  <span class="err" id="errPhone" hidden></span>
+                </p>
+              </div>
+              <div class="grid2">
+                <p class="fld">
+                  <label for="bkCourse">Course</label>
+                  <select id="bkCourse" name="interest"></select>
+                </p>
+                <p class="fld">
+                  <label for="bkTime">Preferred timing</label>
+                  <select id="bkTime" name="timing"></select>
+                </p>
+              </div>
+              <p class="fld">
+                <label for="bkArea"
+                  >Pickup area <span class="opt">optional</span></label
+                >
+                <input
+                  id="bkArea"
+                  name="area"
+                  placeholder="Model Town, Bathinda"
+                />
+              </p>
+              <p class="fld">
+                <label for="bkMsg"
+                  >Anything else <span class="opt">optional</span></label
+                >
+                <textarea
+                  id="bkMsg"
+                  name="note"
+                  rows="3"
+                  placeholder="I have never driven before"
+                ></textarea>
+              </p>
+              <button
+                class="btn btn-solid btn-lg btn-wide"
+                type="submit"
+                id="bkSend"
+              >
+                Request a Callback
+              </button>
+            </form>
+
+            <div
+              class="book-done"
+              id="bookDone"
+              role="status"
+              tabindex="-1"
+              hidden
+            >
+              <span class="tick"
+                ><svg class="ic ic-lg" aria-hidden="true">
+                  <use href="/assets/icons.svg#i-check" /></svg
+              ></span>
+              <h3 id="doneTitle">Thank you.</h3>
+              <p id="doneText"></p>
+              <p class="demo-hint">
+                <svg class="ic" aria-hidden="true">
+                  <use href="/assets/icons.svg#i-info" />
+                </svg>
+                <span
+                  >In this demo your enquiry went straight into the management
+                  app. Open <a href="/app/">Staff Login</a> and look under
+                  <b>Enquiries</b>.</span
+                >
+              </p>
+              <button class="btn btn-line" id="bookAgain" type="button">
+                Send another
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CONTACT ================= -->
+      <section class="band" id="contact">
+        <div class="shell">
+          <header class="lead">
+            <p class="eyebrow">08 / JUST AROUND THE CORNER</p>
+            <h2>Come and see us</h2>
+            <p>
+              Walk in on any working day, or call and we will answer your
+              questions.
+            </p>
+          </header>
+          <div class="contact" id="contactGrid"></div>
+        </div>
+      </section>
+
+      <!-- ================= FINAL CTA ================= -->
+      <section class="final">
+        <div class="shell final-in">
+          <h2>Your next chapter.<br />Your hands on the wheel.</h2>
+          <p>
+            Book a trial class and see how we teach before you decide anything.
+          </p>
+          <div class="final-acts">
+            <a class="btn btn-solid btn-lg" href="#book">Book a Trial Class</a>
+            <a class="btn btn-ghost btn-lg" data-call href="#"
+              >Call Back Gear</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="foot">
+      <div class="shell foot-grid">
+        <div class="foot-brand">
+          <a class="brand brand-light" href="#top">
+            <svg class="brand-mark" aria-hidden="true">
+              <use href="/assets/icons.svg#brand-mark" />
+            </svg>
+            <span class="brand-words"
+              ><b>BACK<i>GEAR</i></b
+              ><small>Driving School</small></span
+            >
+          </a>
+          <p class="foot-note">
+            Driving training and licence guidance in Bathinda, Punjab.
+            Dual-control cars, patient instructors and batches that fit around
+            your work.
+          </p>
+        </div>
+        <nav aria-label="Footer">
+          <h3>Pages</h3>
+          <ul>
+            <li><a href="#courses">Courses</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#licence">Licence help</a></li>
+            <li><a href="#why">Why Back Gear</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </nav>
+        <div>
+          <h3>Courses</h3>
+          <ul id="footCourses"></ul>
+        </div>
+        <div>
+          <h3>Reach us</h3>
+          <ul id="footContact"></ul>
+        </div>
+      </div>
+      <div class="shell foot-base">
+        <span id="copy"></span
+        ><span class="demo-disclosure"
+          >Client demo · Stock photography and sample business details</span
+        >
+        <span class="foot-links">
+          <a href="/app/">Staff Login</a>
+          <span class="foot-priv"
+            >We use your phone number only to contact you about classes.</span
+          >
+        </span>
+      </div>
+    </footer>
+
+    <!-- sticky actions on a phone -->
+    <nav class="dock" aria-label="Quick actions">
+      <a class="dock-btn" data-call href="#">
+        <svg class="ic" aria-hidden="true">
+          <use href="/assets/icons.svg#i-phone" /></svg
+        >Call</a
+      >
+      <a
+        class="dock-btn dock-wa"
+        data-wa
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        <svg class="ic" aria-hidden="true">
+          <use href="/assets/icons.svg#i-message-circle" /></svg
+        >WhatsApp</a
+      >
+      <a class="dock-btn dock-primary" href="#book">Book a Class</a>
     </nav>
-    <div>
-      <h3>Courses</h3>
-      <ul id="footCourses"></ul>
-    </div>
-    <div>
-      <h3>Reach us</h3>
-      <ul id="footContact"></ul>
-    </div>
-  </div>
-  <div class="shell foot-base">
-    <span id="copy"></span>
-    <span class="foot-links">
-      <a href="/app/">Staff Login</a>
-      <span class="foot-priv">We use your phone number only to contact you about classes.</span>
-    </span>
-  </div>
-</footer>
 
-<!-- sticky actions on a phone -->
-<div class="dock" aria-label="Quick actions">
-  <a class="dock-btn" data-call href="#">
-    <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-phone"/></svg>Call</a>
-  <a class="dock-btn dock-wa" data-wa href="#" target="_blank" rel="noopener">
-    <svg class="ic" aria-hidden="true"><use href="/assets/icons.svg#i-message-circle"/></svg>WhatsApp</a>
-  <a class="dock-btn dock-primary" href="#book">Book a Class</a>
-</div>
-
-<script type="module" src="/js/site.js"></script>
-</body>
+    <script type="module" src="/js/site.js"></script>
+  </body>
 </html>

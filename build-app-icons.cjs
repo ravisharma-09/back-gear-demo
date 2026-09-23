@@ -5,7 +5,8 @@ const zlib = require('node:zlib');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const NAVY = [19, 33, 51];
+const NAVY = [24, 34, 31];
+const LIME = [213, 242, 103];
 const WHITE = [255, 255, 255];
 const RED = [224, 29, 43];
 
@@ -115,8 +116,8 @@ function render(size, opt){
 const out = path.join(__dirname, 'assets');
 fs.mkdirSync(out, { recursive: true });
 
-const standard = { bg: NAVY, fg: WHITE, wheel:.32, rim:.058, hub:.115, spoke:.046, maskable:false };
-const maskable = { bg: NAVY, fg: WHITE, wheel:.25, rim:.046, hub:.090, spoke:.036, maskable:true };
+const standard = { bg: NAVY, fg: LIME, wheel:.32, rim:.058, hub:.115, spoke:.046, maskable:false };
+const maskable = { bg: NAVY, fg: LIME, wheel:.25, rim:.046, hub:.090, spoke:.036, maskable:true };
 
 fs.writeFileSync(path.join(out, 'app-icon-192.png'), render(192, standard));
 fs.writeFileSync(path.join(out, 'app-icon-512.png'), render(512, standard));

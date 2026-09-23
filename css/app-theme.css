@@ -1,0 +1,458 @@
+/* Brand layer for both staff portals. Status colours retain their meaning. */
+:root {
+  --blue: #526a2e;
+  --blue-dark: #3e5222;
+  --blue-soft: #edf3df;
+  --blue-line: #ccd9ac;
+  --navy: #18221f;
+  --navy-soft: #263830;
+  --ink: #202b26;
+  --ink-2: #59665d;
+  --ink-3: #626f62;
+  --line: #dce3d6;
+  --line-2: #e9ede4;
+  --bg: #f5f7f1;
+  --bg-2: #f0f3e9;
+  --bg-3: #e9efdf;
+  --lime: #d5f267;
+  --r: 10px;
+  --r-lg: 18px;
+  --shadow: 0 12px 40px #2033200d;
+  --font: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Manrope", var(--font);
+  letter-spacing: -0.035em;
+}
+.btn {
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+.btn-primary {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--ink);
+  box-shadow: none;
+}
+.btn-primary:hover {
+  background: #c7e750;
+  border-color: #c7e750;
+  color: var(--ink);
+  box-shadow: 0 4px 12px #526a2e15;
+}
+.btn-primary .icon,
+.quick .btn-primary .quick-icon-badge {
+  color: var(--ink);
+}
+.control {
+  background: #fffefb;
+  min-height: 42px;
+}
+.avatar {
+  background: #e8efd9;
+  color: #526a2e;
+}
+.topbar {
+  background: #fffef9ed;
+  padding-top: max(18px, env(safe-area-inset-top));
+  padding-bottom: 18px;
+}
+.topbar-title h1 {
+  font-size: 23px;
+}
+.topbar-title p {
+  margin-top: 4px;
+}
+.content {
+  padding-top: 30px;
+}
+.block-head {
+  border: 0;
+  margin-bottom: 14px;
+  padding-bottom: 0;
+}
+.block-head h2 {
+  color: var(--ink-2);
+  font-family: var(--font);
+  letter-spacing: 0.08em;
+}
+.rows {
+  background: #fffefb;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 18px;
+}
+a.row-item,
+button.row-item {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  margin: 0;
+  width: 100%;
+  border-radius: 0;
+}
+.rows .row-item:last-child {
+  border-bottom: 0;
+}
+.tcols {
+  padding-top: 14px;
+  background: var(--bg-2);
+}
+.glance {
+  gap: 16px;
+}
+.glance-item {
+  padding: 22px 18px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px #20332004;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.glance-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.glance-icon {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-radius: 12px;
+}
+.glance-body b {
+  font-size: 27px;
+  letter-spacing: -0.04em;
+}
+.hello {
+  font-size: 13px;
+}
+.hello-name {
+  font-size: 32px;
+  margin-top: 6px;
+  margin-bottom: 26px;
+}
+.quick .btn {
+  box-shadow: none;
+  min-height: 60px;
+}
+.quick-primary-btn {
+  background: var(--lime) !important;
+  color: var(--ink) !important;
+  border-color: var(--lime) !important;
+  box-shadow: none !important;
+}
+.quick-primary-btn:hover {
+  box-shadow: var(--shadow) !important;
+}
+.stat-blue .stat-icon-wrap {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.stat-blue .stat-body b {
+  color: var(--blue);
+}
+.welcome {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  padding: 28px;
+}
+.welcome h2 {
+  font-size: 25px;
+}
+.welcome > p,
+.welcome-steps p {
+  color: #c4d0bd;
+}
+.welcome-steps li > span {
+  background: var(--lime);
+  color: var(--ink);
+}
+.class-card {
+  padding: 20px;
+  border-radius: 12px;
+}
+.chip {
+  border-radius: 30px;
+}
+.chip[aria-pressed="true"] {
+  background: var(--navy);
+}
+.deflist {
+  background: #fffefb;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 20px;
+}
+.deflist div:last-child {
+  border-bottom: 0;
+}
+.deflist dd {
+  overflow-wrap: anywhere;
+}
+.sheet-panel,
+.sheet-head,
+.sheet-foot {
+  background: #fffefb;
+}
+.sheet-head {
+  padding: 20px;
+}
+.sheet-head h2 {
+  font-size: 21px;
+}
+.sheet-body {
+  padding: 24px;
+}
+.sheet-foot {
+  padding: 18px 24px max(18px, env(safe-area-inset-bottom));
+}
+.sheet form {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sheet .sheet-body {
+  overflow-y: auto;
+}
+.bottomnav {
+  background: #fffef9f5;
+}
+.bottomnav a[aria-current="page"] {
+  color: var(--ink);
+  background: #edf3df;
+}
+.bottomnav a[aria-current="page"] .icon {
+  color: #526a2e;
+}
+/* Login stays self-contained and usable before web fonts arrive. */
+.login {
+  background:
+    radial-gradient(ellipse at top left, #455834 0%, transparent 55%),
+    var(--navy);
+  padding: 42px 22px;
+}
+.login-card {
+  max-width: 430px;
+  padding: 36px;
+  background: #fffef9;
+  border: 1px solid #ffffff30;
+  border-radius: 22px;
+  box-shadow: 0 30px 90px #0003;
+}
+.login-logo {
+  width: 54px;
+  height: 54px;
+}
+.login-card h1 {
+  font-size: 29px;
+  letter-spacing: -0.055em;
+}
+.login-wordmark i {
+  color: #6c823d;
+}
+.login-sub {
+  font-size: 12px;
+  margin-top: 10px;
+}
+.login-roles .btn-primary .lr-note {
+  color: #43542c;
+}
+.login-back a {
+  color: var(--ink-2);
+}
+/* One clear install action, with the browser-specific guide one tap away. */
+.app-download {
+  background: var(--navy);
+  color: white;
+  border-radius: 18px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.app-download img {
+  width: 78px;
+  height: 78px;
+  flex: none;
+  border-radius: 18px;
+}
+.app-download-copy {
+  flex: 1;
+  min-width: 0;
+}
+.app-download .eyebrow-sm {
+  color: var(--lime);
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+.app-download h2 {
+  font-size: 26px;
+}
+.app-download p {
+  color: #c4d0bd;
+  font-size: 13px;
+  max-width: 470px;
+  margin-top: 9px;
+}
+.app-download .btn {
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+  min-height: 46px;
+  padding: 12px 18px;
+}
+.app-download .download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  align-items: center;
+}
+.install-help {
+  background: none;
+  border: 0;
+  color: #d7e4ca;
+  font-size: 13px;
+  text-decoration: underline;
+  padding: 10px 0;
+}
+.install-caption {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-bottom: 20px;
+}
+@media (min-width: 1024px) {
+  .sidebar {
+    background: var(--navy);
+    border: 0;
+    padding: 24px 16px;
+  }
+  .sidebar-brand {
+    padding: 7px 8px 30px;
+  }
+  .sidebar-logo {
+    color: var(--lime);
+  }
+  .logo-text b {
+    color: white;
+    font-size: 22px;
+    letter-spacing: -0.06em;
+  }
+  .logo-text b i {
+    color: var(--lime);
+  }
+  .logo-text small {
+    color: #acbca2;
+    letter-spacing: 0.16em;
+  }
+  .sidebar-nav {
+    gap: 5px;
+  }
+  .sidebar-nav a {
+    color: #c1cdba;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .sidebar-nav a:hover {
+    color: white;
+    background: #2b3b31;
+  }
+  .sidebar-nav a[aria-current="page"] {
+    background: var(--lime);
+    color: var(--ink);
+  }
+  .sidebar-role span {
+    color: #b6c4ac;
+  }
+  .sidebar-foot {
+    border-color: #ffffff20;
+  }
+  .sidebar-foot .btn {
+    color: #d6e2cb;
+    background: transparent;
+    border-color: #ffffff30;
+  }
+  .sidebar-foot .btn:hover {
+    background: #2b3b31;
+  }
+  .topbar {
+    padding-left: 36px;
+    padding-right: 36px;
+  }
+  .content {
+    padding: 32px 36px 44px;
+  }
+}
+@media (max-width: 767px) {
+  .glance-item {
+    padding: 16px 12px;
+    gap: 9px;
+  }
+  .glance-body b {
+    font-size: 23px;
+  }
+  .glance-body span {
+    font-size: 11px;
+  }
+  .glance-item .row-chev {
+    display: none;
+  }
+  .app-download {
+    align-items: flex-start;
+    padding: 24px;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .app-download img {
+    width: 58px;
+    height: 58px;
+  }
+  .app-download-copy {
+    flex-basis: 100%;
+  }
+  .app-download h2 {
+    font-size: 25px;
+  }
+  .rows {
+    padding: 0 12px;
+  }
+  .deflist {
+    padding: 8px 14px;
+  }
+  .deflist div {
+    grid-template-columns: 95px minmax(0, 1fr);
+    font-size: 13px;
+  }
+  .control {
+    font-size: 16px;
+  }
+  .login-card {
+    padding: 28px 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+/* Keep intrinsic table/filter widths from expanding the mobile app grid. */
+.content { min-width: 0; }
+.toolbar, .chips { min-width: 0; max-width: 100%; }
+@media (max-width: 480px) {
+  .att-row { flex-wrap: wrap; }
+  .att-main { flex-basis: 100%; }
+  .att-buttons { width: 100%; }
+  .att-btn { flex: 1; min-width: 0; }
+  .att-actions { bottom: 64px; }
+  .t-students .row-main b { overflow-wrap: anywhere; }
+}

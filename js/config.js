@@ -42,9 +42,9 @@ export const BUSINESS = {
 const U = (id, w) => `https://images.unsplash.com/${id}?w=${w}&q=72&auto=format&fit=crop`;
 
 export const IMAGES = {
-  /* 4:5 portrait — the hero. A learner's view of a real street. */
-  hero:     { src: U('photo-1624807806624-dd74b21e717a', 1100), w:1100, h:1375,
-              alt:'A learner driving, hands on the wheel, on a city street' },
+  /* Wide hero crop showing a driver and passenger on the road. */
+  hero:     { src: U('photo-1553782097-130fef5d3e27', 1800), w:1800, h:1200,
+              alt:'A driver and passenger in a car, seen from the back seat on a city road' },
   /* 16:9 — the road itself */
   roads:    { src: U('photo-1592639296346-560c37a0f711', 1200), w:1200, h:675,
               alt:'A wide Indian road with everyday traffic' },

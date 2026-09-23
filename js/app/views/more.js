@@ -18,8 +18,8 @@ export function installRow(){
   return `<button class="row-item" type="button" data-do="install">
     ${icon(installed ? 'circle-check-big' : 'download')}
     <span class="row-main">
-      <b>${installed ? 'Back Gear is Installed' : 'Install App / Add to Home Screen'}</b>
-      <span>${installed ? 'Ready for offline use on this device' : 'Use like an app on iPhone, Android or Computer'}</span>
+      <b>${installed ? 'Back Gear is Installed' : 'Download / install app'}</b>
+      <span>${installed ? 'Open from your home screen' : 'Use like an app on iPhone, Android or Computer'}</span>
     </span>
     ${icon('chevron-right','icon row-chev')}
   </button>`;
@@ -46,10 +46,10 @@ function openInstallGuide(activeTab = 'ios'){
     title: 'Install Back Gear',
     body: `
       <p class="muted" style="margin-bottom:14px;font-size:14px">
-        Install Back Gear to access your driving school register anytime from your home screen, even without internet.
+        Add Back Gear to your home screen for a dedicated app window. Open it online once to save the app for offline use. Demo records stay on this device.
       </p>
 
-      <div class="chips" role="group" aria-label="Device selection" style="margin-bottom:18px">
+      <div class="chips" data-install-tabs role="group" aria-label="Device selection" style="margin-bottom:18px">
         <button class="chip" type="button" data-inst-tab="ios" aria-pressed="${activeTab === 'ios'}">
           📱 iPhone / iPad
         </button>
@@ -61,6 +61,7 @@ function openInstallGuide(activeTab = 'ios'){
         </button>
       </div>
 
+      ${!window.isSecureContext ? `<div class="notice notice-amber" style="margin-bottom:18px">${icon('info')}<span>Open the published HTTPS website to install on your phone. A local network HTTP address cannot install the offline app.</span></div>` : ''}
       <div id="instGuideBody">
         ${renderGuideSteps(activeTab)}
       </div>
@@ -69,21 +70,16 @@ function openInstallGuide(activeTab = 'ios'){
     onSave: () => {},
   });
 
-  // Attach listener for switching tabs inside the sheet dialog
-  setTimeout(() => {
-    const dialog = document.querySelector('dialog[open]');
-    if (!dialog) return;
-    dialog.addEventListener('click', e => {
-      const chip = e.target.closest('[data-inst-tab]');
-      if (!chip) return;
-      const tab = chip.dataset.instTab;
-      dialog.querySelectorAll('[data-inst-tab]').forEach(c => {
-        c.setAttribute('aria-pressed', String(c.dataset.instTab === tab));
-      });
-      const body = dialog.querySelector('#instGuideBody');
-      if (body) body.innerHTML = renderGuideSteps(tab);
+  const dialog = document.querySelector('dialog[open]');
+  dialog.querySelector('[data-install-tabs]').addEventListener('click', e => {
+    const chip = e.target.closest('[data-inst-tab]');
+    if (!chip) return;
+    const tab = chip.dataset.instTab;
+    dialog.querySelectorAll('[data-inst-tab]').forEach(c => {
+      c.setAttribute('aria-pressed', String(c.dataset.instTab === tab));
     });
-  }, 50);
+    dialog.querySelector('#instGuideBody').innerHTML = renderGuideSteps(tab);
+  });
 }
 
 function renderGuideSteps(tab){
@@ -92,26 +88,26 @@ function renderGuideSteps(tab){
       <ol class="steps-list">
         <li>
           <div>
-            <b>1. Tap the Share button in Safari</b>
+            <b>Tap the Share button in Safari</b>
             <span>Look for the square icon with an upward arrow (⎕↑) at the bottom or top of your screen.</span>
           </div>
         </li>
         <li>
           <div>
-            <b>2. Select "Add to Home Screen"</b>
+            <b>Select "Add to Home Screen"</b>
             <span>Scroll down the share menu options and tap "Add to Home Screen" (+).</span>
           </div>
         </li>
         <li>
           <div>
-            <b>3. Tap "Add" at the top right</b>
+            <b>Tap "Add" at the top right</b>
             <span>Back Gear icon will now be on your home screen ready to open in full screen!</span>
           </div>
         </li>
       </ol>
       <div class="notice notice-amber" style="margin-top:16px">
         ${icon('info')}
-        <span class="small">On Chrome for iOS, tap the share icon in the address bar then "Add to Home Screen".</span>
+        <span class="small">If your browser does not show this option, open this page in Safari and use its Share menu.</span>
       </div>`;
   }
   if (tab === 'android'){
@@ -119,20 +115,20 @@ function renderGuideSteps(tab){
       <ol class="steps-list">
         <li>
           <div>
-            <b>1. Tap the Browser Menu (⋮)</b>
+            <b>Tap the Browser Menu (⋮)</b>
             <span>Tap the 3 vertical dots at the top right corner in Chrome, Brave, or Samsung Internet.</span>
           </div>
         </li>
         <li>
           <div>
-            <b>2. Tap "Install App" or "Add to Home screen"</b>
+            <b>Tap "Install App" or "Add to Home screen"</b>
             <span>Look for the install or home screen option in the dropdown menu.</span>
           </div>
         </li>
         <li>
           <div>
-            <b>3. Confirm "Install"</b>
-            <span>The app installs instantly and works offline on your phone!</span>
+            <b>Confirm "Install"</b>
+            <span>Confirm the browser prompt, then open Back Gear from your home screen.</span>
           </div>
         </li>
       </ol>`;
@@ -141,19 +137,19 @@ function renderGuideSteps(tab){
     <ol class="steps-list">
       <li>
         <div>
-          <b>1. In Chrome, Edge, or Brave</b>
+          <b>In Chrome, Edge, or Brave</b>
           <span>Click the <b>Install (⤓ or ⊕)</b> icon on the right side of the address bar at the top.</span>
         </div>
       </li>
       <li>
         <div>
-          <b>2. Click "Install Back Gear"</b>
+          <b>Click "Install Back Gear"</b>
           <span>Confirm the prompt to create a dedicated desktop window and app shortcut.</span>
         </div>
       </li>
       <li>
         <div>
-          <b>3. On Safari (macOS Sonoma+)</b>
+          <b>On Safari (macOS Sonoma+)</b>
           <span>Click <b>File → Add to Dock</b> from the top menu bar.</span>
         </div>
       </li>
@@ -175,10 +171,10 @@ export function renderMore(view){
         ${icon('log-out')}<span class="row-main"><b>Sign out</b></span></button>
     </div>
   </div>`;
-  view.addEventListener('click', async e => {
+  view.onclick = async e => {
     if (e.target.closest('[data-do="install"]')) return handleInstall();
     if (e.target.closest('[data-do="signout"]')) signOut();
-  });
+  };
 }
 
 /* ---------------- Instructors ---------------- */
@@ -575,6 +571,23 @@ export function renderReports(view){
 export function renderSettings(view){
   setPage({ title:'Settings', back:true });
   view.innerHTML = `
+    <section class="app-download" aria-labelledby="downloadTitle">
+      <img src="/assets/app-icon-192.png" width="78" height="78" alt="Back Gear app icon">
+      <div class="app-download-copy">
+        <div class="eyebrow-sm">YOUR SCHOOL. IN YOUR POCKET.</div>
+        <h2 id="downloadTitle">${installState() === 'installed' ? 'Your app is ready.' : 'Take Back Gear with you.'}</h2>
+        <p>Students, schedules and payments, one tap away. Add the web app to your phone’s home screen or your computer.</p>
+        <div class="download-actions">
+          <button class="btn btn-primary btn-lg" type="button" data-do="install" ${installState() === 'installed' ? 'disabled' : ''}>
+            ${icon(installState() === 'installed' ? 'circle-check-big' : 'download')}
+            ${installState() === 'installed' ? 'App installed' : 'Download / install app'}
+          </button>
+          <button class="install-help" type="button" data-do="install-help">How to install</button>
+        </div>
+      </div>
+    </section>
+    <p class="install-caption">iPhone · Android · Desktop. Installs from your browser, with no app-store download.</p>
+
     <div class="notice notice-amber">${icon('triangle-alert')}
       <span><b>This is a demo prototype.</b> Information is stored only in this browser.
       It is not a database, it is not backed up and it is not secure. The production
@@ -593,11 +606,6 @@ export function renderSettings(view){
     </div>
 
     <div class="block">
-      <div class="block-head"><h2>This app</h2></div>
-      <div class="rows">${installRow()}</div>
-    </div>
-
-    <div class="block">
       <div class="block-head"><h2>Demo data</h2></div>
       <div class="rows">
         <button class="row-item" type="button" data-do="reset">
@@ -608,7 +616,8 @@ export function renderSettings(view){
       </div>
     </div>`;
 
-  view.addEventListener('click', async e => {
+  view.onclick = async e => {
+    if (e.target.closest('[data-do="install-help"]')) return openInstallGuide(getDeviceCategory());
     if (e.target.closest('[data-do="install"]')) return handleInstall();
     if (!e.target.closest('[data-do="reset"]')) return;
     openSheet({
@@ -618,5 +627,5 @@ export function renderSettings(view){
       submitLabel:'Reset demo',
       onSave: () => { resetDemo(); toast('Demo data restored'); go('#/home'); },
     });
-  });
+  };
 }

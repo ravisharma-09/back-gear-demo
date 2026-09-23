@@ -44,7 +44,7 @@ export async function promptInstall(){
   deferred = null;
   announce();
   try {
-    event.prompt();
+    await event.prompt();
     const { outcome } = await event.userChoice;
     if (outcome === 'accepted'){ installed = true; announce(); }
     return outcome;
@@ -67,8 +67,10 @@ if (typeof window !== 'undefined'){
 /* Register the service worker for offline support */
 export function registerServiceWorker(){
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
-  window.addEventListener('load', () => {
+  const register = () => {
     navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
       .catch(err => console.info('Service worker not registered:', err.message));
-  });
+  };
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once:true });
 }

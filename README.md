@@ -52,11 +52,10 @@ class themselves.
 The management app is a Progressive Web App, so it can be installed to a home
 screen and opened like any other app.
 
-1. Start the server and find your machine's address on the wi-fi, for example
-   `http://192.168.1.5:5173/app/`.
+1. Deploy the site over HTTPS, then visit its `/app/` address once while online.
 2. Open that address on the phone: **Chrome** on Android, **Safari** on iPhone.
-3. **Android** — a blue *Install* card appears on the app's Home screen, or use
-   **More → Install the app**.
+3. **Android** — open **More → Settings → Download / install app** in the Admin portal.
+   Trainers can use **More → Download / install app**.
    **iPhone** — tap **Share → Add to Home Screen**. The app spells out these
    steps for you.
 
@@ -167,11 +166,11 @@ The data models already in place: `students`, `instructors`, `attendance`,
 not load `css/base.css`, so nothing about the public pages can affect the Admin or
 Trainer portals, or the other way round.
 
-All wording, photography, courses, reviews and contact details come from
-**`js/config.js`**. Edit that one file to change the site.
+Business details, photography and course descriptions come from **`js/config.js`**.
+Section headings and FAQs are in **`index.html`**.
 
 Sections: header, hero, trust strip, courses, how training works, why Back Gear,
-training vehicles, licence assistance, reviews, booking, contact, closing call to
+training vehicles, licence assistance, FAQs, booking, contact, closing call to
 action, footer. A sticky Call / WhatsApp / Book bar appears on phones.
 
 ## Photographs
@@ -201,3 +200,26 @@ Edit the `ICONS` list in `build-icons.cjs` to add more.
 The production build would add: a real backend and database, proper authentication
 with roles for owner/admin/instructor, an API, secure hosting, automated backups,
 audit history, and real notifications.
+
+The public site uses a charcoal and lime palette, responsive course filters, native
+FAQ accordions, image hover effects and progressive scroll reveals. Reduced-motion
+preferences disable animation. Course enquiry links preselect the booking form,
+and submissions continue to use the existing demo data store.
+
+
+### Portal theme and installation
+
+Both staff portals use the charcoal/lime brand layer in `css/app-theme.css`.
+Settings includes a **Download / install app** button. Compatible browsers open
+an installation prompt; other browsers show device-specific home-screen steps.
+The **How to install** link always opens those instructions. On iPhone, open
+Safari and choose **Share → Add to Home Screen**.
+
+Phone installation requires the published HTTPS site. A laptop's `localhost`
+address is only for local preview, and a plain HTTP LAN address is not enough.
+Visit the app online once to cache the required files before opening offline.
+Installation does not add a backend, backups, or cross-device syncing.
+
+Run `node test-install.mjs` to check install-event handling, device detection and
+service-worker registration after page load. Actual OS installation should also
+be checked on the intended iPhone/Android device after HTTPS deployment.
