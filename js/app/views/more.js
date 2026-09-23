@@ -1,64 +1,170 @@
-import { $, icon, esc, money, initials, dmy, emptyState, openSheet, toast,
+import { $, icon, esc, money, initials, dmy, fmtTime, emptyState, openSheet, toast,
          field, selectField, textareaField, downloadCSV } from '../ui.js';
-import { setPage, SECONDARY, go } from '../main.js';
+import { setPage, moreItems, go, signOut, state } from '../main.js';
 import { listInstructors, studentsOf, listEnquiries, setEnquiryStatus, markConverted,
          addEnquiry, listStudents, feeSummary, allPayments, getStudent, attendanceCount,
-         courseById, totalPending, resetDemo, COURSES } from '../../data/store.js';
+         courseById, totalPending, resetDemo, COURSES, listVehicles, lessonsOn,
+         saveInstructor, deleteInstructor, instructorLoad, reassignInstructor,
+         saveVehicle, deleteVehicle, vehicleLoad, getVehicle, VEHICLE_STATUS,
+         listRequests, resolveRequest, getInstructor,
+         TODAY } from '../../data/store.js';
 import { openAddStudent } from './students.js';
-import { installState, promptInstall, isIOS } from '../install.js';
+import { installState, promptInstall, getDeviceCategory } from '../install.js';
 
 /* ---------------- installing the app ---------------- */
-const INSTALL_COPY = {
-  ready:       { title:'Install the app',  note:'Add Back Gear to your home screen and open it like any other app.' },
-  ios:         { title:'Add to Home Screen', note:'In Safari, tap Share then "Add to Home Screen".' },
-  installed:   { title:'App installed',    note:'You are running Back Gear as an installed app.' },
-  unavailable: { title:'Install the app',  note:'Open this page in Chrome, Edge or Safari on your phone to install it.' },
-};
-
 export function installRow(){
   const st = installState();
-  const c = INSTALL_COPY[st];
-  const disabled = st === 'installed' || st === 'unavailable';
-  return `<button class="row-item" type="button" data-do="install"${disabled ? ' disabled' : ''}>
-    ${icon(st === 'installed' ? 'circle-check-big' : 'download')}
-    <span class="row-main"><b>${esc(c.title)}</b><span>${esc(c.note)}</span></span>
-    ${disabled ? '' : icon('chevron-right','icon row-chev')}
+  const installed = st === 'installed';
+  return `<button class="row-item" type="button" data-do="install">
+    ${icon(installed ? 'circle-check-big' : 'download')}
+    <span class="row-main">
+      <b>${installed ? 'Back Gear is Installed' : 'Install App / Add to Home Screen'}</b>
+      <span>${installed ? 'Ready for offline use on this device' : 'Use like an app on iPhone, Android or Computer'}</span>
+    </span>
+    ${icon('chevron-right','icon row-chev')}
   </button>`;
 }
 
 export async function handleInstall(){
   const st = installState();
-  if (st === 'installed'){ toast('The app is already installed'); return; }
-  if (st === 'ios' || st === 'unavailable'){
-    openSheet({
-      title: isIOS() ? 'Add to Home Screen' : 'Install the app',
-      body: isIOS()
-        ? `<ol class="steps-list">
-             <li><div><b>Tap the Share button</b><span>The square with an arrow, at the bottom of Safari.</span></div></li>
-             <li><div><b>Choose "Add to Home Screen"</b><span>Scroll down the list to find it.</span></div></li>
-             <li><div><b>Tap Add</b><span>Back Gear then opens from your home screen like any other app.</span></div></li>
-           </ol>`
-        : `<p>Your browser has not offered to install this app yet.</p>
-           <ol class="steps-list" style="margin-top:14px">
-             <li><div><b>On a phone</b><span>Open this page in Chrome or Safari and try again.</span></div></li>
-             <li><div><b>On a laptop</b><span>In Chrome or Edge, use the install icon in the address bar.</span></div></li>
-           </ol>`,
-      submitLabel:'Got it',
-      onSave: () => {},
-    });
+  if (st === 'installed'){
+    toast('Back Gear is already installed on this device');
     return;
   }
-  const outcome = await promptInstall();
-  if (outcome === 'accepted') toast('Installing Back Gear…');
-  else if (outcome === 'dismissed') toast('Install cancelled');
-  else toast('Install is not available here', 'error');
+  if (st === 'ready'){
+    const outcome = await promptInstall();
+    if (outcome === 'accepted'){ toast('Installing Back Gear…'); return; }
+    if (outcome === 'dismissed'){ toast('Install cancelled'); return; }
+  }
+
+  const defaultCat = getDeviceCategory(); // 'ios' | 'android' | 'desktop'
+  openInstallGuide(defaultCat);
+}
+
+function openInstallGuide(activeTab = 'ios'){
+  openSheet({
+    title: 'Install Back Gear',
+    body: `
+      <p class="muted" style="margin-bottom:14px;font-size:14px">
+        Install Back Gear to access your driving school register anytime from your home screen, even without internet.
+      </p>
+
+      <div class="chips" role="group" aria-label="Device selection" style="margin-bottom:18px">
+        <button class="chip" type="button" data-inst-tab="ios" aria-pressed="${activeTab === 'ios'}">
+          📱 iPhone / iPad
+        </button>
+        <button class="chip" type="button" data-inst-tab="android" aria-pressed="${activeTab === 'android'}">
+          🤖 Android
+        </button>
+        <button class="chip" type="button" data-inst-tab="desktop" aria-pressed="${activeTab === 'desktop'}">
+          💻 Laptop / PC
+        </button>
+      </div>
+
+      <div id="instGuideBody">
+        ${renderGuideSteps(activeTab)}
+      </div>
+    `,
+    submitLabel: 'Got it',
+    onSave: () => {},
+  });
+
+  // Attach listener for switching tabs inside the sheet dialog
+  setTimeout(() => {
+    const dialog = document.querySelector('dialog[open]');
+    if (!dialog) return;
+    dialog.addEventListener('click', e => {
+      const chip = e.target.closest('[data-inst-tab]');
+      if (!chip) return;
+      const tab = chip.dataset.instTab;
+      dialog.querySelectorAll('[data-inst-tab]').forEach(c => {
+        c.setAttribute('aria-pressed', String(c.dataset.instTab === tab));
+      });
+      const body = dialog.querySelector('#instGuideBody');
+      if (body) body.innerHTML = renderGuideSteps(tab);
+    });
+  }, 50);
+}
+
+function renderGuideSteps(tab){
+  if (tab === 'ios'){
+    return `
+      <ol class="steps-list">
+        <li>
+          <div>
+            <b>1. Tap the Share button in Safari</b>
+            <span>Look for the square icon with an upward arrow (⎕↑) at the bottom or top of your screen.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>2. Select "Add to Home Screen"</b>
+            <span>Scroll down the share menu options and tap "Add to Home Screen" (+).</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>3. Tap "Add" at the top right</b>
+            <span>Back Gear icon will now be on your home screen ready to open in full screen!</span>
+          </div>
+        </li>
+      </ol>
+      <div class="notice notice-amber" style="margin-top:16px">
+        ${icon('info')}
+        <span class="small">On Chrome for iOS, tap the share icon in the address bar then "Add to Home Screen".</span>
+      </div>`;
+  }
+  if (tab === 'android'){
+    return `
+      <ol class="steps-list">
+        <li>
+          <div>
+            <b>1. Tap the Browser Menu (⋮)</b>
+            <span>Tap the 3 vertical dots at the top right corner in Chrome, Brave, or Samsung Internet.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>2. Tap "Install App" or "Add to Home screen"</b>
+            <span>Look for the install or home screen option in the dropdown menu.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>3. Confirm "Install"</b>
+            <span>The app installs instantly and works offline on your phone!</span>
+          </div>
+        </li>
+      </ol>`;
+  }
+  return `
+    <ol class="steps-list">
+      <li>
+        <div>
+          <b>1. In Chrome, Edge, or Brave</b>
+          <span>Click the <b>Install (⤓ or ⊕)</b> icon on the right side of the address bar at the top.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>2. Click "Install Back Gear"</b>
+          <span>Confirm the prompt to create a dedicated desktop window and app shortcut.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>3. On Safari (macOS Sonoma+)</b>
+          <span>Click <b>File → Add to Dock</b> from the top menu bar.</span>
+        </div>
+      </li>
+    </ol>`;
 }
 
 /* ---------------- More menu (mobile) ---------------- */
 export function renderMore(view){
   setPage({ title:'More' });
   view.innerHTML = `<div class="rows">
-    ${SECONDARY.map(s => `<a class="row-item" href="#/${s.id}">
+    ${moreItems().map(s => `<a class="row-item" href="#/${s.id}">
       ${icon(s.icon)}<span class="row-main"><b>${esc(s.label)}</b></span>
       ${icon('chevron-right','icon row-chev')}</a>`).join('')}
   </div>
@@ -71,43 +177,254 @@ export function renderMore(view){
   </div>`;
   view.addEventListener('click', async e => {
     if (e.target.closest('[data-do="install"]')) return handleInstall();
-    if (e.target.closest('[data-do="signout"]')){
-      try { sessionStorage.removeItem('backgear.demo.session'); } catch {}
-      location.reload();
-    }
+    if (e.target.closest('[data-do="signout"]')) signOut();
   });
 }
 
 /* ---------------- Instructors ---------------- */
-export function renderInstructors(view){
+export function renderTrainers(view){
   const list = listInstructors();
-  setPage({ title:'Instructors', sub:`${list.length} instructors`, back:true });
-  view.innerHTML = `<div class="rows">${list.map(i => {
-    const mine = studentsOf(i.id);
-    return `<button class="row-item" type="button" data-inst="${esc(i.id)}">
-      <span class="avatar" aria-hidden="true">${esc(initials(i.name))}</span>
-      <span class="row-main"><b>${esc(i.name)}</b>
-        <span>${mine.length} student${mine.length === 1 ? '' : 's'} · ${esc(i.languages)}</span></span>
-      <span class="row-side"><span class="pill ${i.active ? 'pill-green' : ''}">
-        ${i.active ? 'Active' : 'Inactive'}</span></span>
-      ${icon('chevron-right','icon row-chev')}
-    </button>`; }).join('')}</div>
-    <div id="instPanel" style="margin-top:18px"></div>`;
+  setPage({ title:'Trainers', sub:`${list.length} trainers`, back:true,
+    actions:`<button class="btn btn-primary btn-sm" data-do="add-trainer">${icon('plus','icon icon-sm')}Add</button>` });
+
+  view.innerHTML = `<div class="class-list">${list.map(i => {
+    const load = instructorLoad(i.id);
+    return `<article class="class-card">
+      <div class="cc-time"><span class="avatar" aria-hidden="true">${esc(initials(i.name))}</span></div>
+      <div class="cc-body">
+        <div class="cc-name">${esc(i.name)}</div>
+        <div class="cc-meta">
+          <span>${icon('phone','icon icon-sm')} ${esc(i.phone)}</span>
+          <span>${icon('languages','icon icon-sm')} ${esc(i.languages || '\u2014')}</span>
+        </div>
+        <div class="cc-meta">
+          <span>${load.students} students</span>
+          <span>${load.upcoming} upcoming classes</span>
+        </div>
+      </div>
+      <div class="cc-side">
+        <span class="pill ${i.active ? 'pill-green' : ''}">${i.active ? 'Active' : 'Not working'}</span>
+        <div class="cc-actions">
+          <button class="btn btn-sm" data-edit-trainer="${esc(i.id)}">Edit</button>
+          <button class="btn btn-sm" data-students="${esc(i.id)}">Students</button>
+          <button class="btn btn-sm btn-danger" data-remove-trainer="${esc(i.id)}">Remove</button>
+        </div>
+      </div>
+    </article>`; }).join('')}</div>
+    <div id="instPanel" style="margin-top:22px"></div>`;
+
+  const handle = e => {
+    if (e.target.closest('[data-do="add-trainer"]')) return openTrainerForm();
+    const ed = e.target.closest('[data-edit-trainer]');
+    if (ed) return openTrainerForm(list.find(x => x.id === ed.dataset.editTrainer));
+    const rm = e.target.closest('[data-remove-trainer]');
+    if (rm) return removeTrainer(rm.dataset.removeTrainer);
+    const show = e.target.closest('[data-students]');
+    if (show){
+      const i = list.find(x => x.id === show.dataset.students);
+      const mine = studentsOf(i.id);
+      $('#instPanel', view).innerHTML = `
+        <div class="block-head"><h2>${esc(i.name)} \u2014 their students</h2></div>
+        ${mine.length ? `<div class="rows">${mine.map(s => `
+          <a class="row-item" href="#/student/${esc(s.id)}">
+            <span class="row-main"><b>${esc(s.name)}</b>
+              <span>${esc(courseById(s.courseId).label)}</span></span>
+            ${icon('chevron-right','icon row-chev')}</a>`).join('')}</div>`
+        : emptyState('users', 'No active students assigned.')}`;
+      $('#instPanel', view).scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  };
+  view.addEventListener('click', handle);
+  $('#topActions').onclick = handle;
+}
+
+function openTrainerForm(trainer){
+  openSheet({
+    title: trainer ? `Edit ${trainer.name}` : 'Add a trainer',
+    body: `${field({ name:'name', label:'Name', value:trainer?.name, required:true })}
+      ${field({ name:'phone', label:'Phone number', type:'tel', value:trainer?.phone, required:true,
+                attrs:'inputmode="tel"' })}
+      ${field({ name:'languages', label:'Languages they teach in', value:trainer?.languages,
+                attrs:'placeholder="Punjabi, Hindi"' })}
+      ${trainer ? selectField({ name:'active', label:'Currently working', value:String(trainer.active),
+        options:[{value:'true',label:'Yes, taking classes'},{value:'false',label:'No, not right now'}] }) : ''}`,
+    submitLabel: trainer ? 'Save changes' : 'Add trainer',
+    onSave: data => {
+      saveInstructor({ ...(trainer ? { id:trainer.id } : {}), ...data,
+        active: data.active === undefined ? true : data.active === 'true' });
+      toast(trainer ? 'Trainer updated' : `${data.name} added as a trainer`);
+    },
+  });
+}
+
+/** Removing a trainer is blocked until their students and classes have a new home. */
+function removeTrainer(id){
+  const trainer = getInstructor(id);
+  const load = instructorLoad(id);
+  const others = listInstructors().filter(i => i.id !== id);
+
+  if (!load.students && !load.upcoming){
+    openSheet({
+      title:`Remove ${trainer.name}?`,
+      body:`<p>${esc(trainer.name)} has no students and no upcoming classes, so it is safe to remove them.</p>`,
+      submitLabel:'Remove trainer',
+      onSave: () => { deleteInstructor(id); toast(`${trainer.name} removed`); },
+    });
+    return;
+  }
+  const bits = [];
+  if (load.students) bits.push(`${load.students} ${load.students === 1 ? 'student' : 'students'}`);
+  if (load.upcoming) bits.push(`${load.upcoming} upcoming ${load.upcoming === 1 ? 'class' : 'classes'}`);
+
+  openSheet({
+    title:`Move ${trainer.name}'s work first`,
+    body:`<div class="notice notice-amber">${icon('triangle-alert')}
+        <span>${esc(trainer.name)} has ${esc(bits.join(' and '))}.
+        Please reassign them before removing this trainer.</span></div>
+      ${others.length ? `<div style="margin-top:20px">
+        ${selectField({ name:'to', label:'Move everything to', value: others[0].id,
+          options: others.map(i => ({ value:i.id, label:i.name })) })}
+        <p class="hint">Their students and all future classes move across. Finished classes stay
+          on the record as they were.</p></div>`
+        : `<p style="margin-top:16px">There is no other trainer to move them to. Add one first.</p>`}`,
+    submitLabel: others.length ? 'Reassign all' : 'Close',
+    onSave: data => {
+      if (!others.length) return;
+      const moved = reassignInstructor(id, data.to);
+      const to = getInstructor(data.to);
+      toast(`Moved ${moved.students} students and ${moved.lessons} classes to ${to.name}. You can remove ${trainer.name} now.`);
+    },
+  });
+}
+
+/* ---------------- Cars ---------------- */
+export function renderVehicles(view){
+  const cars = listVehicles({ includeRetired: true });
+  const today = lessonsOn(TODAY).filter(l => l.status !== 'Cancelled');
+  setPage({ title:'Vehicles', sub:`${cars.length} cars and scooters`, back:true,
+    actions:`<button class="btn btn-primary btn-sm" data-do="add-vehicle">${icon('plus','icon icon-sm')}Add</button>` });
+
+  view.innerHTML = `
+    <p class="sheet-lead" style="margin-bottom:16px">Who is using each vehicle today.</p>
+    <div class="class-list">${cars.map(v => {
+      const booked = today.filter(l => l.vehicleId === v.id).sort((a,b) => a.time.localeCompare(b.time));
+      const tone = v.status === 'Available' ? (booked.length ? 'pill-amber' : 'pill-green')
+                 : v.status === 'In maintenance' ? 'pill-red' : '';
+      return `<article class="class-card${v.status === 'Retired' ? ' is-off' : ''}">
+        <div class="cc-time">${icon('car','icon icon-lg')}</div>
+        <div class="cc-body">
+          <div class="cc-name">${esc(v.name)}</div>
+          <div class="cc-meta"><span>${esc(v.reg)}</span><span>${esc(v.type)}</span></div>
+          ${v.status === 'Available'
+            ? (booked.length ? `<ul class="car-slots">${booked.map(l => `
+                <li>${fmtTime(l.time)} \u2014 ${esc(getStudent(l.studentId)?.name || 'student')}</li>`).join('')}</ul>`
+              : `<p class="car-free">Free all day</p>`)
+            : `<p class="car-free" style="color:var(--ink-2)">Not taking classes</p>`}
+        </div>
+        <div class="cc-side">
+          <span class="pill ${tone}">${v.status === 'Available' && booked.length
+            ? booked.length + ' booked' : esc(v.status)}</span>
+          <div class="cc-actions">
+            <button class="btn btn-sm" data-edit-vehicle="${esc(v.id)}">Edit</button>
+            <button class="btn btn-sm btn-danger" data-remove-vehicle="${esc(v.id)}">Remove</button>
+          </div>
+        </div>
+      </article>`; }).join('')}</div>`;
+
+  const handle = e => {
+    if (e.target.closest('[data-do="add-vehicle"]')) return openVehicleForm();
+    const ed = e.target.closest('[data-edit-vehicle]');
+    if (ed) return openVehicleForm(getVehicle(ed.dataset.editVehicle));
+    const rm = e.target.closest('[data-remove-vehicle]');
+    if (rm) return removeVehicle(rm.dataset.removeVehicle);
+  };
+  view.addEventListener('click', handle);
+  $('#topActions').onclick = handle;
+}
+
+function openVehicleForm(vehicle){
+  openSheet({
+    title: vehicle ? `Edit ${vehicle.name}` : 'Add a vehicle',
+    body: `${field({ name:'name', label:'Name', value:vehicle?.name, required:true,
+              attrs:'placeholder="Swift"' })}
+      ${field({ name:'reg', label:'Number plate', value:vehicle?.reg, required:true,
+              attrs:'placeholder="PB 03 AB 1234"' })}
+      ${selectField({ name:'type', label:'Type', value:vehicle?.type || 'Car',
+        options:[{value:'Car',label:'Car'},{value:'Scooter',label:'Scooter or bike'}] })}
+      ${selectField({ name:'status', label:'Status', value:vehicle?.status || 'Available',
+        options: VEHICLE_STATUS.map(x => ({ value:x, label:
+          x === 'Available' ? 'Available for classes'
+          : x === 'In maintenance' ? 'In maintenance \u2014 no classes'
+          : 'Retired \u2014 not used any more' })) })}`,
+    submitLabel: vehicle ? 'Save changes' : 'Add vehicle',
+    onSave: data => {
+      saveVehicle({ ...(vehicle ? { id:vehicle.id } : {}), ...data });
+      toast(vehicle ? `${data.name} updated` : `${data.name} added`);
+    },
+  });
+}
+
+/** A vehicle cannot disappear from under a booked class. */
+function removeVehicle(id){
+  const v = getVehicle(id);
+  const { upcoming } = vehicleLoad(id);
+  if (upcoming){
+    openSheet({
+      title:`${v.name} is still booked`,
+      body:`<div class="notice notice-amber">${icon('triangle-alert')}
+        <span>${esc(v.name)} is booked for ${upcoming} upcoming
+        ${upcoming === 1 ? 'class' : 'classes'}. Move those classes to another vehicle,
+        or put it in maintenance instead of removing it.</span></div>`,
+      submitLabel:'Put in maintenance',
+      onSave: () => { saveVehicle({ id, status:'In maintenance' });
+        toast(`${v.name} marked as in maintenance`); },
+    });
+    return;
+  }
+  openSheet({
+    title:`Remove ${v.name}?`,
+    body:`<p>${esc(v.name)} has no upcoming classes, so it is safe to remove.</p>`,
+    submitLabel:'Remove vehicle',
+    onSave: () => { deleteVehicle(id); toast(`${v.name} removed`); },
+  });
+}
+
+/* ---------------- what trainers have asked for ---------------- */
+export function renderRequests(view){
+  const open = listRequests('Open');
+  const done = listRequests().filter(r => r.status !== 'Open');
+  setPage({ title:'Requests', sub:`${open.length} waiting for you`, back:true });
+
+  const card = r => {
+    const trainer = getInstructor(r.instructorId);
+    const student = getStudent(r.studentId);
+    return `<article class="class-card${r.status !== 'Open' ? ' is-off' : ''}">
+      <div class="cc-time">${fmtTime(r.time)}</div>
+      <div class="cc-body">
+        <div class="cc-name">${esc(student?.name || 'Student')} \u2014 ${esc(dmy(r.date))}</div>
+        <div class="cc-meta"><span>Asked by ${esc(trainer?.name || 'a trainer')}</span></div>
+        <p class="small" style="margin-top:6px">${esc(r.note)}</p>
+      </div>
+      <div class="cc-side">
+        <span class="pill ${r.status === 'Open' ? 'pill-amber' : 'pill-green'}">${esc(r.status)}</span>
+        ${r.status === 'Open' ? `<div class="cc-actions">
+          <a class="btn btn-sm btn-primary" href="#/schedule">Open schedule</a>
+          <button class="btn btn-sm" data-done="${esc(r.id)}">Mark handled</button>
+        </div>` : ''}
+      </div>
+    </article>`;
+  };
+
+  view.innerHTML = open.length || done.length
+    ? `${open.length ? `<div class="class-list">${open.map(card).join('')}</div>` : ''}
+       ${done.length ? `<div class="block" style="margin-top:26px">
+         <div class="block-head"><h2>Already handled</h2></div>
+         <div class="class-list">${done.map(card).join('')}</div></div>` : ''}`
+    : emptyState('circle-alert', 'No requests. Trainers can ask you to move a class from their app.');
 
   view.addEventListener('click', e => {
-    const row = e.target.closest('[data-inst]');
-    if (!row) return;
-    const i = list.find(x => x.id === row.dataset.inst);
-    const mine = studentsOf(i.id);
-    $('#instPanel', view).innerHTML = `
-      <div class="block-head"><h2>${esc(i.name)} — assigned students</h2></div>
-      ${mine.length ? `<div class="rows">${mine.map(s => `
-        <a class="row-item" href="#/student/${esc(s.id)}">
-          <span class="row-main"><b>${esc(s.name)}</b>
-            <span>${esc(courseById(s.courseId).label)}</span></span>
-          ${icon('chevron-right','icon row-chev')}</a>`).join('')}</div>`
-      : emptyState('users', 'No active students assigned.')}`;
-    $('#instPanel', view).scrollIntoView({ behavior:'smooth', block:'nearest' });
+    const b = e.target.closest('[data-done]');
+    if (b){ resolveRequest(b.dataset.done); toast('Marked as handled'); }
   });
 }
 

@@ -1,13 +1,15 @@
 /* Keeps the app shell on the device so it opens instantly and keeps working
    with no signal. There is no backend, so everything the app needs is here.  */
-const CACHE = 'backgear-app-v1';
+const CACHE = 'backgear-app-v3';
 const SHELL = [
   '/app/', '/app/index.html', '/app/manifest.webmanifest',
   '/css/base.css', '/css/app.css',
   '/js/config.js', '/js/data/seed.js', '/js/data/store.js',
   '/js/app/main.js', '/js/app/ui.js', '/js/app/install.js',
-  '/js/app/views/dashboard.js', '/js/app/views/students.js', '/js/app/views/attendance.js',
-  '/js/app/views/fees.js', '/js/app/views/lessons.js', '/js/app/views/more.js',
+  '/js/app/views/students.js', '/js/app/views/attendance.js',
+  '/js/app/views/fees.js', '/js/app/views/schedule.js', '/js/app/views/more.js',
+  '/js/app/views/trainer.js', '/js/app/views/admin-home.js',
+  '/js/data/permissions.js',
   '/assets/icons.svg', '/assets/app-icon-192.png', '/assets/app-icon-512.png',
 ];
 

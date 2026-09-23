@@ -42,9 +42,17 @@
     </form>
 
     <div class="login-demo">
-      <p><b>Demo login</b> — prototype only, no real authentication</p>
-      <p class="login-creds">owner@backgear.demo<br>demo123</p>
-      <button class="btn btn-block" type="button" id="fillDemo">Use the demo account</button>
+      <p><b>Try the demo</b> — choose which portal to open</p>
+      <div class="login-roles">
+        <button class="btn btn-primary btn-block" type="button" data-demo-login="admin">
+          <span class="lr-name">Open Admin Demo</span>
+          <span class="lr-note">Run the whole school</span></button>
+        <button class="btn btn-block" type="button" data-demo-login="trainer">
+          <span class="lr-name">Open Trainer Demo</span>
+          <span class="lr-note">Harpreet Singh — today's classes only</span></button>
+      </div>
+      <p class="login-note">Password for all three is <b>demo123</b>. This is a prototype
+        sign-in, not real security.</p>
     </div>
     <p class="login-back"><a href="/">&larr; Back to the website</a></p>
   </main>
@@ -60,6 +68,7 @@
       <span class="logo-text"><b>BACK<i>GEAR</i></b><small>Management</small></span>
     </div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-role"><span id="roleBadge"></span></div>
     <div class="sidebar-foot">
       <button class="btn btn-sm btn-block" id="signOutDesktop">
         <svg class="icon icon-sm" aria-hidden="true"><use href="/assets/icons.svg#i-log-out"/></svg>Sign out</button>

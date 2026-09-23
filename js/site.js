@@ -8,6 +8,7 @@ import { COURSES } from './data/seed.js';
 import { addEnquiry, ValidationError } from './data/store.js';
 
 const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 const rupees = n => '₹' + Number(n).toLocaleString('en-IN');
@@ -20,7 +21,6 @@ function setPhoto(id, image){
   el.loading = id === 'heroPhoto' ? 'eager' : 'lazy';
   el.src = image.src;
   el.addEventListener('error', () => {
-    // offline or the photo host is unreachable - keep the layout, lose the picture
     el.removeAttribute('src');
     el.closest('.hero')?.classList.add('no-photo');
     el.style.display = 'none';
@@ -33,8 +33,19 @@ setPhoto('licencePhoto', IMAGES.licence);
 /* ---------- WhatsApp links ---------- */
 const waHref = 'https://wa.me/' + BUSINESS.whatsapp + '?text=' +
   encodeURIComponent(`Hello ${BUSINESS.name}, I would like to know about driving classes.`);
-document.querySelectorAll('[data-wa]').forEach(a => { a.href = waHref; a.target = '_blank'; a.rel = 'noopener'; });
+$$('[data-wa]').forEach(a => { a.href = waHref; a.target = '_blank'; a.rel = 'noopener'; });
 $('#year').textContent = new Date().getFullYear();
+
+/* ---------- masthead scroll effect ---------- */
+const masthead = $('#masthead');
+if (masthead){
+  const onScroll = () => {
+    if (window.scrollY > 20) masthead.classList.add('scrolled');
+    else masthead.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+}
 
 /* ---------- menu ---------- */
 const toggle = $('#navToggle'), nav = $('#siteNav');
@@ -59,10 +70,13 @@ const COURSE_BLURB = {
   'c-ladies': 'A women-only batch taught by a lady instructor, with pick-up and drop available.',
   'c-comm':   'For taxi, cab and light transport work. Includes commercial licence paperwork guidance.',
 };
-$('#courseGrid').innerHTML = COURSES.map(c => {
+$('#courseGrid').innerHTML = COURSES.map((c, idx) => {
   const photo = COURSE_PHOTO[c.id] || IMAGES.courseCar;
-  return `<article class="course-card">
-    <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy" width="600" height="375">
+  const delayClass = `delay-${(idx % 3) + 1}`;
+  return `<article class="course-card reveal ${delayClass}">
+    <div class="course-card-media">
+      <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy" width="600" height="375">
+    </div>
     <div class="body">
       <h3>${esc(c.name)} &middot; ${c.days} Days</h3>
       <div class="course-meta">
@@ -84,9 +98,7 @@ $('#courseGrid').addEventListener('click', e => {
   setTimeout(() => $('#bkName').focus({ preventScroll:true }), 400);
 });
 
-/* ---------- instructors ----------
-   Names and experience are demo content. We deliberately do not use stock
-   photographs of people here - nobody should be presented as staff. */
+/* ---------- instructors ---------- */
 const TEAM = [
   { name:'Raj Kumar',      role:'Senior instructor', since:2016, langs:'Hindi, Punjabi',           teaches:'Car — beginners' },
   { name:'Harpreet Singh', role:'Instructor',        since:2018, langs:'Punjabi, Hindi, English',  teaches:'Car, commercial' },
@@ -94,8 +106,9 @@ const TEAM = [
   { name:'Gurdeep Singh',  role:'Instructor',        since:2022, langs:'Punjabi, English',         teaches:'Two-wheeler' },
 ];
 const initials = n => n.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
-$('#teamList').innerHTML = TEAM.map(m => `
-  <li>
+$('#teamList').innerHTML = TEAM.map((m, idx) => {
+  const delayClass = `delay-${idx + 1}`;
+  return `<li class="reveal ${delayClass}">
     <span class="avatar" aria-hidden="true">${esc(initials(m.name))}</span>
     <h3>${esc(m.name)}</h3>
     <p class="role">${esc(m.role)}</p>
@@ -104,9 +117,10 @@ $('#teamList').innerHTML = TEAM.map(m => `
       <div><dt>With us</dt><dd>since ${m.since}</dd></div>
       <div><dt>Languages</dt><dd>${esc(m.langs)}</dd></div>
     </dl>
-  </li>`).join('');
+  </li>`;
+}).join('');
 $('#teamList').insertAdjacentHTML('afterend',
-  `<p class="team-note">Instructor details shown are demo content for this prototype.</p>`);
+  `<p class="team-note reveal">Instructor details shown are demo content for this prototype.</p>`);
 
 /* ---------- FAQ ---------- */
 const FAQS = [
@@ -128,7 +142,7 @@ const FAQS = [
    'We pick up and drop across most of Bathinda city. Tell us your area and we will confirm.'],
 ];
 $('#faqList').innerHTML = FAQS.map(([q, a], i) => `
-  <details${i === 0 ? ' open' : ''}>
+  <details class="reveal delay-${(i % 4) + 1}" ${i === 0 ? ' open' : ''}>
     <summary>${esc(q)}<svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#i-chevron-down"/></svg></summary>
     <p class="answer">${esc(a)}</p>
   </details>`).join('');
@@ -177,3 +191,43 @@ $('#bookingAgain').addEventListener('click', () => {
   form.reset(); form.hidden = false; $('#bookingDone').hidden = true;
   $('#bkName').focus();
 });
+
+/* ---------- scroll reveal observer ---------- */
+function initScrollReveal(){
+  // Add reveal classes to key semantic sections if not present
+  $$('.section-head, .split-body, .split-media, .offers-grid article, .booking, .contact-list > div, .steps li').forEach((el, i) => {
+    if (!el.classList.contains('reveal') && !el.classList.contains('reveal-left') && !el.classList.contains('reveal-right')){
+      el.classList.add('reveal');
+      if (el.closest('.offers-grid') || el.closest('.contact-list') || el.closest('.steps')){
+        el.classList.add(`delay-${(i % 4) + 1}`);
+      }
+    }
+  });
+
+  const targets = $$('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+  if (!('IntersectionObserver' in window)){
+    targets.forEach(el => el.classList.add('is-revealed'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        entry.target.classList.add('is-revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    rootMargin: '0px 0px -40px 0px',
+    threshold: 0.1
+  });
+
+  targets.forEach(el => observer.observe(el));
+}
+
+// Initialise scroll animations
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initScrollReveal);
+} else {
+  initScrollReveal();
+}

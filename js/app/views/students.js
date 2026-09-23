@@ -6,7 +6,7 @@ import { listStudents, getStudent, saveStudent, deleteStudent, listInstructors,
          lessonsFor } from '../../data/store.js';
 import { LICENCE_STATES } from '../../data/seed.js';
 import { openAddPayment } from './fees.js';
-import { openAddLesson } from './lessons.js';
+import { openBookClass } from './schedule.js';
 
 const filters = { q:'', status:'' };
 
@@ -214,7 +214,7 @@ export function renderStudentProfile(view, id){
       return;
     }
     if (e.target.closest('[data-do="pay"]')) openAddPayment(st.id);
-    if (e.target.closest('[data-do="lesson"]')) openAddLesson({ studentId: st.id });
+    if (e.target.closest('[data-do="lesson"]')) openBookClass({ studentId: st.id });
     if (e.target.closest('[data-do="remove"]')) removeStudent(st);
   });
   $('#topActions').onclick = e => { if (e.target.closest('[data-do="edit"]')) openEditStudent(st); };

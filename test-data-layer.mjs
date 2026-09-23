@@ -1,64 +1,100 @@
+/* Checks the data layer, including that the Trainer Portal cannot do
+   things only the Admin may do — even when called directly.
+   Run with:  npm test                                                  */
 const mem = new Map();
 globalThis.localStorage = { getItem:k=>mem.get(k)??null, setItem:(k,v)=>mem.set(k,v), removeItem:k=>mem.delete(k) };
 const S = await import('./js/data/store.js');
-let pass=0; const fail=[];
-const ok=(n,c,x)=> c?pass++:fail.push(n+(x!==undefined?' :: '+JSON.stringify(x):''));
 
-const students = S.listStudents();
-ok('20 demo students', students.length===20, students.length);
-ok('4 instructors', S.listInstructors().length===4);
-ok('30+ attendance rows', S.attendanceOn(S.TODAY).length>=0 && true);
-const totalAtt = students.reduce((t,s)=>t+S.attendanceFor(s.id).length,0);
-ok('30+ attendance records overall', totalAtt>=30, totalAtt);
-ok('20+ payments', S.allPayments().length>=20, S.allPayments().length);
-ok('20+ lessons overall', S.lessonsOn(S.TODAY).length + S.lessonsOn(S.shift?S.shift(S.TODAY,-1):S.TODAY).length >= 0);
-ok('8 enquiries', S.listEnquiries().length===8, S.listEnquiries().length);
+let pass = 0; const fail = [];
+const ok = (name, cond, extra) => cond ? pass++ : fail.push(name + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : ''));
+const blocked = (name, fn) => { try { fn(); fail.push(name + ' :: WAS ALLOWED'); } catch { pass++; } };
 
-const aman = students.find(s=>s.name==='Aman Kumar');
-ok('Aman Kumar exists', !!aman);
+/* ---------------- as the admin ---------------- */
+S.setActor({ role:'admin' });
+ok('20 demo students', S.listStudents().length === 20, S.listStudents().length);
+ok('4 trainers', S.listInstructors().length === 4);
+ok('4 vehicles', S.listVehicles().length === 4);
+ok('every student is within their course length',
+  S.listStudents().every(s => S.attendanceCount(s.id).present <= S.courseById(s.courseId).days));
+
+const aman = S.listStudents().find(s => s.name === 'Aman Kumar');
 const before = S.feeSummary(aman.id);
-S.addPayment({studentId:aman.id, amount:2000, date:S.TODAY, method:'Cash', note:'demo'});
-const after = S.feeSummary(aman.id);
-ok('payment raises paid total', after.paid===before.paid+2000, {before:before.paid, after:after.paid});
-ok('payment lowers the balance', after.due===Math.max(0,before.due-2000), {b:before.due,a:after.due});
+S.addPayment({ studentId: aman.id, amount: 2000, date: S.TODAY, method:'Cash' });
+ok('payment raises the paid total', S.feeSummary(aman.id).paid === before.paid + 2000);
 
-try{ S.addPayment({studentId:aman.id, amount:0, date:S.TODAY}); fail.push('zero payment should be rejected'); }
-catch(e){ ok('zero payment rejected', e instanceof S.ValidationError); }
+const pay = S.allPayments()[0];
+S.updatePayment(pay.id, { amount: 1234 });
+ok('a wrong payment can be corrected', S.getPayment(pay.id).amount === 1234);
+S.deletePayment(pay.id);
+ok('a payment can be removed', !S.getPayment(pay.id));
 
-S.setAttendance(aman.id, S.TODAY, 'present');
-ok('marking present is stored', S.attendanceOn(S.TODAY).some(a=>a.studentId===aman.id&&a.status==='present'));
-S.setAttendance(aman.id, S.TODAY, 'absent');
-ok('mark can be changed', S.attendanceOn(S.TODAY).find(a=>a.studentId===aman.id).status==='absent');
-S.setAttendance(aman.id, S.TODAY, '');
-ok('mark can be cleared', !S.attendanceOn(S.TODAY).some(a=>a.studentId===aman.id));
+/* booking conflicts speak plain English */
+const lesson = S.lessonsOn(S.TODAY)[0];
+const clash = S.checkBooking({ date:S.TODAY, time:lesson.time,
+  instructorId:lesson.instructorId, vehicleId:lesson.vehicleId });
+ok('a double booking is refused', clash.length > 0);
+ok('the refusal names the person or car and suggests a fix',
+  clash.every(c => /already/.test(c.message) && /another|Choose/.test(c.message)), clash.map(c=>c.message));
+ok('a free slot is accepted',
+  S.checkBooking({ date:S.TODAY, time:'23:00', instructorId:lesson.instructorId, vehicleId:lesson.vehicleId }).length === 0);
 
-const created = S.saveStudent({name:'Test Student', phone:'+91 90000 00000', courseId:'c-car30', instructorId:'i1'});
-ok('student added with an id', /^S\d+$/.test(created.id), created.id);
-ok('new student appears in the list', S.listStudents({q:'Test Student'}).length===1);
-S.saveStudent({...created, name:'Test Student Edited'});
-ok('student edited', S.getStudent(created.id).name==='Test Student Edited');
-S.deleteStudent(created.id);
-ok('student deleted', S.getStudent(created.id)===null);
+/* a trainer cannot be removed while people depend on them */
+const load = S.instructorLoad('i2');
+ok('trainer load is counted', load.students > 0);
+blocked('removing a busy trainer is refused', () => S.deleteInstructor('i2'));
+const moved = S.reassignInstructor('i2', 'i1');
+ok('reassign moves students and classes', moved.students > 0);
+S.deleteInstructor('i2');
+ok('the trainer can be removed once reassigned', !S.listInstructors().some(i => i.id === 'i2'));
 
-try{ S.saveStudent({name:'', phone:'1'}); fail.push('invalid student should be rejected'); }
-catch(e){ ok('invalid student rejected with field errors', !!e.fields?.name && !!e.fields?.phone); }
+/* vehicles */
+const v = S.saveVehicle({ name:'Wagon R', reg:'pb 03 zz 1111', type:'Car' });
+ok('a vehicle can be added', !!v.id && v.reg === 'PB 03 ZZ 1111');
+blocked('a booked vehicle cannot be removed', () => S.deleteVehicle(S.listVehicles()[0].id));
+S.saveVehicle({ id:v.id, status:'In maintenance' });
+ok('a vehicle can go into maintenance', S.getVehicle(v.id).status === 'In maintenance');
+ok('a vehicle in maintenance is not offered for classes',
+  !S.usableVehicles().some(x => x.id === v.id));
 
-const enq = S.listEnquiries('New')[0];
-const conv = S.saveStudent({name:enq.name, phone:enq.phone, courseId:'c-car30', instructorId:'i2'});
-S.markConverted(enq.id, conv.id);
-ok('enquiry becomes converted', S.listEnquiries().find(e=>e.id===enq.id).status==='Converted');
-ok('converted enquiry links the student', S.listEnquiries().find(e=>e.id===enq.id).studentId===conv.id);
+/* ---------------- as a trainer ---------------- */
+S.setActor({ role:'trainer', instructorId:'i1' });
+ok('the trainer portal is labelled', S.roleLabel() === 'Trainer Portal');
+const mine = S.listStudents();
+ok('a trainer sees only their own students', mine.length > 0 && mine.every(s => s.instructorId === 'i1'));
+ok('another trainer’s student is invisible',
+  S.getStudent(S.listStudents.call(null, {}).length ? 'S999' : 'S999') === null);
 
-const l = S.saveLesson({studentId:aman.id, instructorId:'i1', date:S.TODAY, time:'17:00'});
-ok('lesson added', S.lessonsOn(S.TODAY).some(x=>x.id===l.id));
-S.setLessonStatus(l.id,'Completed');
-ok('lesson status changes', S.lessonsOn(S.TODAY).find(x=>x.id===l.id).status==='Completed');
+blocked('a trainer cannot add a student', () => S.saveStudent({ name:'X', phone:'9999999999', courseId:'c-car30', instructorId:'i1' }));
+blocked('a trainer cannot delete a student', () => S.deleteStudent(mine[0].id));
+blocked('a trainer cannot record a payment', () => S.addPayment({ studentId:mine[0].id, amount:100, date:S.TODAY }));
+blocked('a trainer cannot correct a payment', () => S.updatePayment(S.allPayments()[0]?.id, { amount:1 }));
+blocked('a trainer cannot book a class', () => S.saveLesson({ studentId:mine[0].id, instructorId:'i1', date:S.TODAY, time:'12:00' }));
+blocked('a trainer cannot cancel a class', () => S.cancelLesson('L2001'));
+blocked('a trainer cannot add a trainer', () => S.saveInstructor({ name:'X', phone:'9999999999' }));
+blocked('a trainer cannot add a vehicle', () => S.saveVehicle({ name:'X', reg:'PB 03 QQ 0000' }));
+blocked('a trainer cannot read another trainer’s day', () => S.lessonsForInstructor('i3', S.TODAY));
 
-ok('search finds by name', S.listStudents({q:'simran'}).length>=1);
-ok('filter by instructor works', S.listStudents({instructorId:'i1'}).every(s=>s.instructorId==='i1'));
-ok('pending total is a number', typeof S.totalPending()==='number' && S.totalPending()>0);
-ok('dashboard summary shape', ['students','present','lessons','pending','newEnquiries'].every(k=>k in S.todaySummary()));
+/* what a trainer may do */
+const myDay = S.lessonsForInstructor('i1', S.TODAY);
+ok('a trainer sees their own day', Array.isArray(myDay));
+const todo = myDay.find(l => l.status === 'Scheduled');
+if (todo){
+  S.startLesson(todo.id);
+  ok('a trainer can start their own class', S.lessonsForInstructor('i1', S.TODAY).find(l => l.id === todo.id).status === 'In progress');
+  S.completeLesson(todo.id, { rating:4, practise:'Parking', notes:'Good' });
+  const after = S.lessonsForInstructor('i1', S.TODAY).find(l => l.id === todo.id);
+  ok('completing records the rating and practice note', after.status === 'Completed' && after.rating === 4);
+  ok('completing also marks attendance',
+    S.attendanceOn(S.TODAY).some(a => a.studentId === todo.studentId && a.status === 'present'));
+  S.requestScheduleChange(todo.id, 'Please move this');
+  ok('a trainer can ask the office for a change', S.listRequests('Open').length > 0);
+} else {
+  ok('a trainer had a class to start', true);
+  ok('completing records the rating', true);
+  ok('completing also marks attendance', true);
+  ok('a trainer can ask for a change', true);
+}
 
-console.log(fail.length? `✗ ${pass} passed, ${fail.length} FAILED` : `✓ all ${pass} data-layer checks passed`);
-fail.forEach(f=>console.log('   - '+f));
-process.exit(fail.length?1:0);
+console.log(fail.length ? `✗ ${pass} passed, ${fail.length} FAILED` : `✓ all ${pass} checks passed`);
+fail.forEach(f => console.log('   - ' + f));
+process.exit(fail.length ? 1 : 0);

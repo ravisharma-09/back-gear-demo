@@ -25,6 +25,23 @@ export const courseById = id => COURSES.find(c => c.id === id) || COURSES[0];
 export const LICENCE_STATES = ['Not applied', 'Learner Licence Applied', 'Learner Licence Received',
                                'Driving Test Booked', 'Driving Licence Received'];
 
+/* The cars and scooter the school teaches in. A class needs one free car
+   and one free trainer, which is what the booking screen checks. */
+/* Vehicles live in the store so the admin can add, edit and retire them. */
+const VEHICLE_SEED = [
+  { id:'v1', name:'Swift',  reg:'PB 03 AB 1234', type:'Car',     status:'Available' },
+  { id:'v2', name:'Alto',   reg:'PB 03 CD 5678', type:'Car',     status:'Available' },
+  { id:'v3', name:'i10',    reg:'PB 03 EF 9012', type:'Car',     status:'Available' },
+  { id:'v4', name:'Activa', reg:'PB 03 GH 3456', type:'Scooter', status:'Available' },
+];
+export const VEHICLE_STATUS = ['Available', 'In maintenance', 'Retired'];
+
+/* Two demo sign-ins: the admin who runs the school, and one trainer. */
+export const DEMO_ACCOUNTS = [
+  { email:'admin@backgear.demo',   password:'demo123', name:'Arjun Singh',    role:'admin' },
+  { email:'trainer@backgear.demo', password:'demo123', name:'Harpreet Singh', role:'trainer', instructorId:'i2' },
+];
+
 const INSTRUCTORS = [
   { id:'i1', name:'Raj Kumar',      phone:'+91 98765 10001', joined:'2016-04-11', active:true, languages:'Hindi, Punjabi' },
   { id:'i2', name:'Harpreet Singh', phone:'+91 98765 10002', joined:'2018-09-02', active:true, languages:'Punjabi, Hindi, English' },
@@ -81,13 +98,15 @@ export function buildSeed(){
       fee: course.fee,
       paid: Math.round(course.fee * paidPart / 500) * 500,
       status: i === 8 ? 'On hold' : i === 17 ? 'Completed' : 'Active',
+      pickup: area + ', Bathinda',
       licence: LICENCE_STATES[i % LICENCE_STATES.length],
       notes: i % 4 === 0 ? 'Regular student, good progress.' : '',
     };
   });
 
-  /* ---- attendance: the last 12 working days ---- */
+  /* ---- attendance, never more classes than the course actually has ---- */
   const attendance = [];
+  const presentSoFar = {};
   for (let back = 30; back >= 0; back--){
     const date = shift(TODAY, -back);
     if (dow(date) === 0) continue;                       // closed on Sunday
@@ -96,8 +115,13 @@ export function buildSeed(){
       if (date < st.joinedOn) continue;
       if (back === 0 && rnd() < 0.45) continue;          // today is still being filled in
       if (rnd() < 0.18) continue;                        // not every student every day
-      attendance.push({ id:`A-${st.id}-${date}`, studentId: st.id, date,
-        status: rnd() < 0.87 ? 'present' : 'absent' });
+      // never record more attended classes than the course contains, so
+      // progress can never read "16 of 15"
+      const cap = courseById(st.courseId).days;
+      const attended = presentSoFar[st.id] || 0;
+      const status = rnd() < 0.87 && attended < cap - 1 ? 'present' : 'absent';
+      if (status === 'present') presentSoFar[st.id] = attended + 1;
+      attendance.push({ id:`A-${st.id}-${date}`, studentId: st.id, date, status });
     }
   }
 
@@ -124,11 +148,19 @@ export function buildSeed(){
     const dayStudents = students.filter(st => st.status === 'Active').slice(offset + 1, offset + 9);
     for (const st of dayStudents){
       n++;
+      const course = courseById(st.courseId);
+      const pool = course.vehicle === 'Scooter / Bike'
+        ? VEHICLE_SEED.filter(v => v.type === 'Scooter')
+        : VEHICLE_SEED.filter(v => v.type === 'Car');
       lessons.push({
         id:'L' + (2000 + n), studentId: st.id, instructorId: st.instructorId,
+        vehicleId: pool[n % pool.length].id,
         date, time: st.slot, duration: 60,
+        rating: 0, practise: '',
+        // only the very first class of today is done, so the demo always has
+        // classes left to start and complete
         status: offset < 0 ? 'Completed'
-              : offset === 0 ? (Number(st.slot.slice(0,2)) <= 9 ? 'Completed' : 'Scheduled')
+              : offset === 0 ? (Number(st.slot.slice(0,2)) <= 6 ? 'Completed' : 'Scheduled')
               : 'Scheduled',
         notes: '',
       });
@@ -154,5 +186,8 @@ export function buildSeed(){
       date: shift(TODAY,-1), note:'Needs a commercial licence for taxi work.' },
   ];
 
-  return { students, instructors, attendance, payments, lessons, enquiries };
+  const vehicles = VEHICLE_SEED.map(v => ({ ...v }));
+  /* changes a trainer has asked the admin to make */
+  const requests = [];
+  return { students, instructors, vehicles, attendance, payments, lessons, enquiries, requests };
 }

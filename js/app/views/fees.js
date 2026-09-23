@@ -32,12 +32,12 @@ export function openAddPayment(studentId = ''){
   });
 }
 
-export function renderFees(view){
+export function renderPayments(view){
   const students = listStudents().map(s => ({ ...s, ...feeSummary(s.id) }));
   const owing = students.filter(s => s.due > 0).sort((a,b) => b.due - a.due);
   const payments = allPayments();
 
-  setPage({ title:'Fees', sub:'Track student payments and remaining balances',
+  setPage({ title:'Payments', sub:'Track student payments and remaining balances',
     actions:`<button class="btn btn-primary btn-sm" data-do="pay">${icon('plus','icon icon-sm')}Add payment</button>` });
 
   view.innerHTML = `

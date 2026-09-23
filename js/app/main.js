@@ -1,35 +1,77 @@
 /* ==================================================================
-   Management app shell: demo login, navigation and routing.
+   The app shell: who is signed in, what they can see, and routing.
 
-   >>> The login below is PROTOTYPE ONLY. It compares against a
-   >>> hard-coded demo account and stores a flag in the browser.
-   >>> It is not authentication and protects nothing. Real auth,
-   >>> roles and permissions come with the production build.
+   >>> The sign-in below is PROTOTYPE ONLY. It compares against three
+   >>> demo accounts kept in the browser. It is not authentication and
+   >>> protects nothing. Real logins, roles and permissions come later.
    ================================================================== */
 import { $, $$, icon, esc, toast, wireSheet } from './ui.js';
-import { onChange } from '../data/store.js';
-import { renderDashboard } from './views/dashboard.js';
+import { onChange, DEMO_ACCOUNTS, setActor } from '../data/store.js';
+import { renderAdminHome } from './views/admin-home.js';
 import { renderStudents, renderStudentProfile } from './views/students.js';
+import { renderSchedule } from './views/schedule.js';
 import { renderAttendance } from './views/attendance.js';
-import { renderFees } from './views/fees.js';
-import { renderLessons } from './views/lessons.js';
-import { renderInstructors, renderEnquiries, renderReports, renderSettings, renderMore }
-  from './views/more.js';
+import { renderPayments } from './views/fees.js';
+import { renderTrainers, renderVehicles, renderEnquiries, renderReports,
+         renderSettings, renderMore } from './views/more.js';
+import { renderTrainerToday, renderTrainerStudents, renderTrainerProfile } from './views/trainer.js';
+import { renderRequests } from './views/more.js';
 import { registerServiceWorker, onInstallChange } from './install.js';
 
-const DEMO_USER = { email:'owner@backgear.demo', password:'demo123', name:'Arjun Singh', role:'Owner' };
 const SESSION_KEY = 'backgear.demo.session';
-
 export const state = { user:null, route:{ name:'home', id:'' } };
 
-/* ---------------- demo login ---------------- */
-function readSession(){
-  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
-}
-function writeSession(user){
-  try { user ? sessionStorage.setItem(SESSION_KEY, JSON.stringify(user))
-             : sessionStorage.removeItem(SESSION_KEY); } catch { /* demo continues in memory */ }
-}
+/* ---------------- who can see what ---------------- */
+const NAV = {
+  admin: {
+    bar: [
+      { id:'home',     label:'Home',     icon:'house' },
+      { id:'students', label:'Students', icon:'users' },
+      { id:'schedule', label:'Schedule', icon:'calendar-days' },
+      { id:'payments', label:'Payments', icon:'indian-rupee' },
+    ],
+    more: [
+      { id:'trainers',   label:'Trainers',   icon:'user-check' },
+      { id:'vehicles',   label:'Vehicles',   icon:'car' },
+      { id:'enquiries',  label:'Enquiries',  icon:'phone-call' },
+      { id:'attendance', label:'Attendance', icon:'calendar-check' },
+      { id:'requests',   label:'Requests',   icon:'circle-alert' },
+      { id:'reports',    label:'Reports',    icon:'chart-column' },
+      { id:'settings',   label:'Settings',   icon:'settings' },
+    ],
+  },
+  trainer: {
+    bar: [
+      { id:'home',     label:'Today',       icon:'calendar-check' },
+      { id:'students', label:'My students', icon:'users' },
+    ],
+    more: [{ id:'profile', label:'My profile', icon:'user-round' }],
+  },
+};
+const navFor = () => NAV[state.user?.role] || NAV.admin;
+export const moreItems = () => navFor().more;
+
+/* A role can only reach the screens listed for it. Typing another hash
+   simply lands on their own home screen. */
+const ROUTES = {
+  admin: {
+    home: renderAdminHome, students: renderStudents, student: renderStudentProfile,
+    schedule: renderSchedule, payments: renderPayments, attendance: renderAttendance,
+    trainers: renderTrainers, vehicles: renderVehicles, enquiries: renderEnquiries,
+    requests: renderRequests, reports: renderReports, settings: renderSettings,
+    more: renderMore,
+  },
+  trainer: {
+    home: renderTrainerToday, students: renderTrainerStudents,
+    student: renderStudentProfile, profile: renderTrainerProfile, more: renderMore,
+  },
+};
+
+/* ---------------- sign in ---------------- */
+const readSession = () => { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } };
+const writeSession = u => { try { u ? sessionStorage.setItem(SESSION_KEY, JSON.stringify(u))
+                                  : sessionStorage.removeItem(SESSION_KEY); } catch {} };
+
 function showLogin(){
   state.user = null;
   $('#app').hidden = true;
@@ -46,21 +88,30 @@ $('#loginForm').addEventListener('submit', e => {
   e.preventDefault();
   const err = $('#loginError');
   const { email, password } = Object.fromEntries(new FormData(e.target).entries());
-  if (email.trim().toLowerCase() === DEMO_USER.email && password === DEMO_USER.password){
-    state.user = { name: DEMO_USER.name, role: DEMO_USER.role, email: DEMO_USER.email };
-    writeSession(state.user);
-    err.hidden = true;
-    showApp();
-  } else {
-    err.textContent = 'Use the demo account shown below.';
+  const found = DEMO_ACCOUNTS.find(a =>
+    a.email === String(email).trim().toLowerCase() && a.password === password);
+  if (!found){
+    err.textContent = 'That email and password do not match. Try one of the demo accounts below.';
     err.hidden = false;
+    return;
   }
+  state.user = { ...found };
+  delete state.user.password;
+  setActor(state.user);
+  writeSession(state.user);
+  err.hidden = true;
+  location.hash = '#/home';
+  showApp();
 });
-$('#fillDemo').addEventListener('click', () => {
-  $('#lgEmail').value = DEMO_USER.email;
-  $('#lgPass').value = DEMO_USER.password;
+
+$$('[data-demo-login]').forEach(btn => btn.addEventListener('click', () => {
+  const acct = DEMO_ACCOUNTS.find(a => a.role === btn.dataset.demoLogin);
+  if (!acct) return;
+  $('#lgEmail').value = acct.email;
+  $('#lgPass').value = acct.password;
   $('#loginForm').requestSubmit();
-});
+}));
+
 $('#pwToggle').addEventListener('click', () => {
   const input = $('#lgPass');
   const show = input.type === 'password';
@@ -68,7 +119,8 @@ $('#pwToggle').addEventListener('click', () => {
   $('#pwToggle').setAttribute('aria-label', show ? 'Hide password' : 'Show password');
   $('#pwToggle').innerHTML = icon(show ? 'eye-off' : 'eye');
 });
-function signOut(){
+
+export function signOut(){
   writeSession(null);
   location.hash = '#/home';
   showLogin();
@@ -76,36 +128,30 @@ function signOut(){
 $('#signOutDesktop').addEventListener('click', signOut);
 
 /* ---------------- navigation ---------------- */
-const PRIMARY = [
-  { id:'home',       label:'Home',       icon:'house' },
-  { id:'students',   label:'Students',   icon:'users' },
-  { id:'attendance', label:'Attendance', icon:'calendar-check' },
-  { id:'fees',       label:'Fees',       icon:'indian-rupee' },
-];
-export const SECONDARY = [
-  { id:'lessons',     label:'Lessons',     icon:'clipboard-list' },
-  { id:'instructors', label:'Instructors', icon:'user-check' },
-  { id:'enquiries',   label:'Enquiries',   icon:'phone-call' },
-  { id:'reports',     label:'Reports',     icon:'chart-column' },
-  { id:'settings',    label:'Settings',    icon:'settings' },
-];
-
 function buildNav(){
-  $('#bottomNav').innerHTML = [...PRIMARY,
-    { id:'more', label:'More', icon:'grid-2x2' }]
-    .map(t => `<a href="#/${t.id}" data-nav="${t.id}">${icon(t.icon)}<span>${t.label}</span></a>`).join('');
-  $('#sidebarNav').innerHTML = [...PRIMARY, ...SECONDARY]
-    .map(t => `<a href="#/${t.id}" data-nav="${t.id}">${icon(t.icon)}<span>${t.label}</span></a>`).join('');
+  const nav = navFor();
+  const bar = [...nav.bar, { id:'more', label:'More', icon:'grid-2x2' }];
+  $('#bottomNav').innerHTML = bar.map(t =>
+    `<a href="#/${t.id}" data-nav="${t.id}">${icon(t.icon)}<span>${esc(t.label)}</span></a>`).join('');
+  $('#sidebarNav').innerHTML = [...nav.bar, ...nav.more].map(t =>
+    `<a href="#/${t.id}" data-nav="${t.id}">${icon(t.icon)}<span>${esc(t.label)}</span></a>`).join('');
+  $('#roleBadge').textContent = portalLabel();
 }
 function markNav(name){
-  const group = ['lessons','instructors','enquiries','reports','settings'].includes(name) ? 'more' : name;
+  const inMore = navFor().more.some(m => m.id === name);
   $$('[data-nav]').forEach(a => {
-    const on = a.dataset.nav === group || a.dataset.nav === name;
+    const on = a.dataset.nav === name || (inMore && a.dataset.nav === 'more');
     on ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current');
   });
 }
 
 /* ---------------- page chrome ---------------- */
+/** "Admin Portal" or "Trainer Portal — Harpreet Singh". */
+export function portalLabel(){
+  if (state.user?.role === 'trainer') return `Trainer Portal — ${state.user.name}`;
+  return 'Admin Portal';
+}
+
 export function setPage({ title, sub = '', back = false, actions = '' }){
   $('#pageTitle').textContent = title;
   $('#pageSub').textContent = sub;
@@ -115,50 +161,34 @@ export function setPage({ title, sub = '', back = false, actions = '' }){
 }
 $('#topBack').addEventListener('click', () => history.back());
 
-/* ---------------- router ---------------- */
-const ROUTES = {
-  home: renderDashboard,
-  students: renderStudents,
-  student: renderStudentProfile,
-  attendance: renderAttendance,
-  fees: renderFees,
-  lessons: renderLessons,
-  instructors: renderInstructors,
-  enquiries: renderEnquiries,
-  reports: renderReports,
-  settings: renderSettings,
-  more: renderMore,
-};
-
+/* ---------------- routing ---------------- */
 function route(scroll = true){
   if (!state.user) return;
+  const table = ROUTES[state.user.role] || ROUTES.admin;
   const raw = (location.hash || '#/home').replace(/^#\/?/, '');
   const [name, id] = raw.split('/');
-  state.route = { name: ROUTES[name] ? name : 'home', id: decodeURIComponent(id || '') };
+  state.route = { name: table[name] ? name : 'home', id: decodeURIComponent(id || '') };
   markNav(state.route.name);
   const view = $('#view');
   view.innerHTML = '';
   try {
-    ROUTES[state.route.name](view, state.route.id);
+    table[state.route.name](view, state.route.id);
   } catch (err){
     console.error(err);
     view.innerHTML = `<div class="empty">${icon('triangle-alert','icon icon-lg')}
-      <p>This screen could not be shown.</p></div>`;
+      <p>This screen could not be shown. Go back and try again.</p></div>`;
   }
   if (scroll) window.scrollTo(0, 0);
 }
 export const go = hash => { location.hash = hash; };
-/** Re-draws the current screen — used after any data change. */
 export const refresh = () => route(false);
 
 window.addEventListener('hashchange', () => route(true));
-/* any change in the data store re-draws the screen, keeping the scroll position */
 onChange(() => { if (state.user) route(false); });
+onInstallChange(() => { if (state.user) route(false); });
 
 /* ---------------- start ---------------- */
 wireSheet();
 registerServiceWorker();
-/* the install button appears the moment the browser says the app is installable */
-onInstallChange(() => { if (state.user) route(false); });
 const saved = readSession();
-if (saved){ state.user = saved; showApp(); } else showLogin();
+if (saved){ state.user = saved; setActor(saved); showApp(); } else showLogin();

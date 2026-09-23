@@ -9,7 +9,10 @@
    >>> When the real backend exists, each function below becomes a
    >>> fetch() call and the screens stay exactly as they are.
    ================================================================== */
-import { buildSeed, courseById, COURSES, TODAY } from './seed.js';
+import { buildSeed, courseById, COURSES, TODAY, VEHICLE_STATUS, DEMO_ACCOUNTS } from './seed.js';
+import { require as needs, requireOwnInstructor, isTrainer, getActor,
+         PermissionError } from './permissions.js';
+export { setActor, can, isTrainer, isAdmin, roleLabel, PermissionError } from './permissions.js';
 
 const KEY = 'backgear.demo.v2';
 const listeners = new Set();
@@ -36,6 +39,9 @@ const nextId = (list, prefix) => prefix + (list.reduce((m, r) =>
 /* ---------------- students ---------------- */
 export const listStudents = ({ q = '', status = '', instructorId = '', courseId = '' } = {}) => {
   const needle = q.trim().toLowerCase();
+  // a trainer only ever receives their own students, whatever they ask for
+  const mine = isTrainer() ? getActor().instructorId : instructorId;
+  if (isTrainer()) instructorId = mine;
   return clone(db.students)
     .filter(s => !status || s.status === status)
     .filter(s => !instructorId || s.instructorId === instructorId)
@@ -45,9 +51,15 @@ export const listStudents = ({ q = '', status = '', instructorId = '', courseId 
                  s.id.toLowerCase().includes(needle))
     .sort((a, b) => a.name.localeCompare(b.name));
 };
-export const getStudent = id => clone(db.students.find(s => s.id === id));
+export const getStudent = id => {
+  const s = db.students.find(x => x.id === id);
+  if (!s) return null;
+  if (isTrainer() && s.instructorId !== getActor().instructorId) return null;
+  return clone(s);
+};
 
 export function saveStudent(data){
+  needs('students.write');
   const errors = validateStudent(data);
   if (errors) throw new ValidationError(errors);
   if (data.id){
@@ -68,6 +80,7 @@ export function saveStudent(data){
   return clone(record);
 }
 export function deleteStudent(id){
+  needs('students.delete');
   db.students = db.students.filter(s => s.id !== id);
   db.attendance = db.attendance.filter(a => a.studentId !== id);
   db.payments   = db.payments.filter(p => p.studentId !== id);
@@ -75,6 +88,10 @@ export function deleteStudent(id){
   save();
 }
 
+/** A rule stopped this, and the message explains what to do about it. */
+export class BlockedError extends Error {
+  constructor(message){ super(message); this.name = 'BlockedError'; }
+}
 export class ValidationError extends Error {
   constructor(fields){ super('Please check the highlighted fields.'); this.fields = fields; }
 }
@@ -100,6 +117,7 @@ export function feeSummary(id){
   return { fee: st.fee, paid, due: Math.max(0, st.fee - paid) };
 }
 export function addPayment({ studentId, amount, date, method, note }){
+  needs('payments.write');
   const value = Number(amount);
   if (!studentId) throw new ValidationError({ studentId:'Choose a student.' });
   if (!value || value <= 0) throw new ValidationError({ amount:'Enter an amount greater than zero.' });
@@ -147,6 +165,7 @@ export const lessonsOn = date => clone(db.lessons.filter(l => l.date === date))
 export const lessonsFor = id => clone(db.lessons.filter(l => l.studentId === id))
   .sort((a,b) => (b.date + b.time).localeCompare(a.date + a.time));
 export function saveLesson(data){
+  needs('schedule.write');
   const e = {};
   if (!data.studentId) e.studentId = 'Choose a student.';
   if (!data.instructorId) e.instructorId = 'Choose an instructor.';
@@ -168,6 +187,256 @@ export function setLessonStatus(id, status){
   const l = db.lessons.find(x => x.id === id);
   if (l){ l.status = status; save(); }
 }
+
+/* ---------------- cars and scooters ---------------- */
+export const listVehicles = ({ includeRetired = false } = {}) =>
+  clone((db.vehicles || []).filter(v => includeRetired || v.status !== 'Retired'));
+export const getVehicle = id => clone((db.vehicles || []).find(v => v.id === id));
+/** Cars that can actually take a class right now. */
+export const usableVehicles = () =>
+  clone((db.vehicles || []).filter(v => v.status === 'Available'));
+
+export function saveVehicle(data){
+  needs('vehicles.write');
+  // an update only has to send what is changing, so merge before checking
+  const existing = data.id ? (db.vehicles || []).find(v => v.id === data.id) : null;
+  const merged = { type:'Car', status:'Available', ...(existing || {}), ...data };
+  const e = {};
+  if (!merged.name || !String(merged.name).trim()) e.name = 'Give the vehicle a name, like Swift.';
+  if (!merged.reg || String(merged.reg).trim().length < 4) e.reg = 'Enter the number plate.';
+  if (Object.keys(e).length) throw new ValidationError(e);
+  const row = { ...merged,
+    name: String(merged.name).trim(), reg: String(merged.reg).trim().toUpperCase() };
+  if (data.id){
+    const i = db.vehicles.findIndex(v => v.id === data.id);
+    if (i >= 0) db.vehicles[i] = { ...db.vehicles[i], ...row };
+  } else {
+    row.id = nextId(db.vehicles, 'v');
+    db.vehicles.push(row);
+  }
+  save();
+  return clone(row);
+}
+/** What would break if this car went away. */
+export function vehicleLoad(id){
+  const upcoming = db.lessons.filter(l => l.vehicleId === id && l.date >= TODAY &&
+    l.status !== 'Cancelled' && l.status !== 'Completed');
+  return { upcoming: upcoming.length, lessons: clone(upcoming) };
+}
+export function deleteVehicle(id){
+  needs('vehicles.delete');
+  const { upcoming } = vehicleLoad(id);
+  if (upcoming > 0){
+    const v = db.vehicles.find(x => x.id === id);
+    throw new BlockedError(
+      `${v?.name || 'This car'} is booked for ${upcoming} upcoming ${upcoming === 1 ? 'class' : 'classes'}. ` +
+      `Move those classes to another car before removing it.`);
+  }
+  db.vehicles = db.vehicles.filter(v => v.id !== id);
+  save();
+}
+
+/* ---------------- trainers ---------------- */
+export function saveInstructor(data){
+  needs('trainers.write');
+  const e = {};
+  if (!data.name || data.name.trim().length < 2) e.name = 'Enter the trainer\u2019s name.';
+  if (!data.phone || data.phone.replace(/\D/g,'').length < 10) e.phone = 'Enter a 10 digit phone number.';
+  if (Object.keys(e).length) throw new ValidationError(e);
+  const row = { active:true, languages:'', ...data, name: data.name.trim(), phone: data.phone.trim() };
+  if (data.id){
+    const i = db.instructors.findIndex(x => x.id === data.id);
+    if (i >= 0) db.instructors[i] = { ...db.instructors[i], ...row };
+  } else {
+    row.id = nextId(db.instructors, 'i');
+    row.joined = TODAY;
+    db.instructors.push(row);
+  }
+  save();
+  return clone(row);
+}
+/** Students and future classes still attached to this trainer. */
+export function instructorLoad(id){
+  const students = db.students.filter(s => s.instructorId === id && s.status !== 'Dropped');
+  const upcoming = db.lessons.filter(l => l.instructorId === id && l.date >= TODAY &&
+    l.status !== 'Cancelled' && l.status !== 'Completed');
+  return { students: students.length, upcoming: upcoming.length };
+}
+/** Hand every student and future class to another trainer. */
+export function reassignInstructor(fromId, toId){
+  needs('trainers.write');
+  if (!db.instructors.some(i => i.id === toId)) throw new BlockedError('Choose a trainer to move them to.');
+  let students = 0, lessons = 0;
+  for (const s of db.students) if (s.instructorId === fromId){ s.instructorId = toId; students++; }
+  for (const l of db.lessons)
+    if (l.instructorId === fromId && l.date >= TODAY && l.status !== 'Completed' && l.status !== 'Cancelled'){
+      l.instructorId = toId; lessons++;
+    }
+  save();
+  return { students, lessons };
+}
+export function deleteInstructor(id){
+  needs('trainers.delete');
+  const { students, upcoming } = instructorLoad(id);
+  if (students || upcoming){
+    const who = db.instructors.find(i => i.id === id)?.name || 'This trainer';
+    const bits = [];
+    if (students) bits.push(`${students} ${students === 1 ? 'student' : 'students'}`);
+    if (upcoming) bits.push(`${upcoming} upcoming ${upcoming === 1 ? 'class' : 'classes'}`);
+    throw new BlockedError(`${who} has ${bits.join(' and ')}. Please reassign them before removing this trainer.`);
+  }
+  db.instructors = db.instructors.filter(i => i.id !== id);
+  save();
+}
+
+/* ---------------- correcting a payment ---------------- */
+export function updatePayment(id, data){
+  needs('payments.write');
+  const p = db.payments.find(x => x.id === id);
+  if (!p) return null;
+  const value = Number(data.amount);
+  if (!value || value <= 0) throw new ValidationError({ amount:'Enter an amount greater than zero.' });
+  Object.assign(p, { amount:value, date:data.date || p.date, method:data.method || p.method,
+                     note:data.note ?? p.note });
+  const st = db.students.find(s => s.id === p.studentId);
+  if (st) st.paid = paidTotal(p.studentId);
+  save();
+  return clone(p);
+}
+export function deletePayment(id){
+  needs('payments.write');
+  const p = db.payments.find(x => x.id === id);
+  if (!p) return;
+  const studentId = p.studentId;
+  db.payments = db.payments.filter(x => x.id !== id);
+  const st = db.students.find(s => s.id === studentId);
+  if (st) st.paid = paidTotal(studentId);
+  save();
+}
+export const getPayment = id => clone(db.payments.find(p => p.id === id));
+
+const mins = t => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); };
+const overlaps = (aStart, aLen, bStart, bLen) =>
+  mins(aStart) < mins(bStart) + bLen && mins(bStart) < mins(aStart) + aLen;
+
+/**
+ * Is this slot free? Returns plain sentences the owner can act on,
+ * never codes or technical wording.
+ *   checkBooking({date, time, duration, instructorId, vehicleId})
+ */
+export function checkBooking({ date, time, duration = 60, instructorId, vehicleId, exceptLessonId }){
+  const problems = [];
+  const sameDay = db.lessons.filter(l =>
+    l.date === date && l.id !== exceptLessonId && l.status !== 'Cancelled');
+
+  const clashTrainer = sameDay.find(l =>
+    l.instructorId === instructorId && overlaps(time, duration, l.time, l.duration || 60));
+  if (clashTrainer){
+    const who = db.instructors.find(i => i.id === instructorId)?.name || 'That trainer';
+    const withWhom = db.students.find(s => s.id === clashTrainer.studentId)?.name || 'another student';
+    problems.push({
+      field:'instructorId',
+      message:`${who} is already teaching ${withWhom} at ${pretty(clashTrainer.time)}. Pick another trainer or another time.`
+    });
+  }
+
+  const clashVehicle = sameDay.find(l =>
+    l.vehicleId === vehicleId && overlaps(time, duration, l.time, l.duration || 60));
+  if (clashVehicle){
+    const car = (db.vehicles || []).find(v => v.id === vehicleId)?.name || 'That car';
+    const free = (db.vehicles || []).filter(v => v.status === 'Available' && v.id !== vehicleId &&
+      !sameDay.some(l => l.vehicleId === v.id && overlaps(time, duration, l.time, l.duration || 60)));
+    const suggestion = free.length
+      ? `Choose ${free.slice(0,2).map(v => v.name).join(' or ')}, or another time.`
+      : 'Every car is busy then. Try another time.';
+    problems.push({
+      field:'vehicleId',
+      message:`${car} is already booked at ${pretty(clashVehicle.time)}. ${suggestion}`
+    });
+  }
+  return problems;
+}
+function pretty(t){
+  const [h, m] = String(t).split(':').map(Number);
+  const ap = h < 12 ? 'AM' : 'PM', hh = h % 12 === 0 ? 12 : h % 12;
+  return `${hh}:${String(m).padStart(2,'0')} ${ap}`;
+}
+
+/** Which cars are free for this slot — used to preselect a sensible default. */
+export function freeVehicles(date, time, duration = 60, exceptLessonId){
+  const taken = db.lessons.filter(l => l.date === date && l.id !== exceptLessonId &&
+    l.status !== 'Cancelled' && overlaps(time, duration, l.time, l.duration || 60))
+    .map(l => l.vehicleId);
+  return listVehicles().filter(v => !taken.includes(v.id));
+}
+export function freeInstructors(date, time, duration = 60, exceptLessonId){
+  const taken = db.lessons.filter(l => l.date === date && l.id !== exceptLessonId &&
+    l.status !== 'Cancelled' && overlaps(time, duration, l.time, l.duration || 60))
+    .map(l => l.instructorId);
+  return listInstructors().filter(i => !taken.includes(i.id));
+}
+
+/* ---------------- a class from start to finish ---------------- */
+export function startLesson(id){
+  needs('lesson.start');
+  const l = db.lessons.find(x => x.id === id);
+  if (!l) return null;
+  requireOwnInstructor(l.instructorId, 'lesson.start');
+  l.status = 'In progress'; save();
+  return clone(l);
+}
+/** Finishing a class marks the student present for that day too. */
+export function completeLesson(id, { notes = '', rating = 0, practise = '' } = {}){
+  needs('lesson.complete');
+  const l = db.lessons.find(x => x.id === id);
+  if (!l) return null;
+  requireOwnInstructor(l.instructorId, 'lesson.complete');
+  l.status = 'Completed';
+  if (notes) l.notes = notes;
+  if (rating) l.rating = Number(rating);
+  if (practise) l.practise = practise;
+  setAttendance(l.studentId, l.date, 'present');
+  save();
+  return clone(l);
+}
+export function cancelLesson(id, reason = ''){
+  needs('schedule.write');
+  const l = db.lessons.find(x => x.id === id);
+  if (l){ l.status = 'Cancelled'; if (reason) l.notes = reason; save(); }
+  return clone(l);
+}
+/** A trainer cannot move a class. They ask the admin, who sees it under Requests. */
+export function requestScheduleChange(id, note = ''){
+  needs('schedule.request');
+  const l = db.lessons.find(x => x.id === id);
+  if (!l) return null;
+  requireOwnInstructor(l.instructorId, 'schedule.request');
+  db.requests = db.requests || [];
+  db.requests.push({
+    id: nextId(db.requests, 'R'), lessonId: id, instructorId: l.instructorId,
+    studentId: l.studentId, date: l.date, time: l.time,
+    note: note || 'Please move this class', status:'Open', created: TODAY,
+  });
+  save();
+  return clone(l);
+}
+export const listRequests = (status = '') => clone(db.requests || [])
+  .filter(r => !status || r.status === status)
+  .sort((a,b) => b.id.localeCompare(a.id));
+export function resolveRequest(id, outcome = 'Done'){
+  needs('schedule.write');
+  const r = (db.requests || []).find(x => x.id === id);
+  if (r){ r.status = outcome; save(); }
+}
+export const nextLessonFor = studentId => clone(
+  db.lessons.filter(l => l.studentId === studentId && l.status !== 'Cancelled' &&
+    (l.date > TODAY || (l.date === TODAY && l.status !== 'Completed')))
+    .sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time))[0]);
+export const lessonsForInstructor = (instructorId, date) => {
+  requireOwnInstructor(instructorId, 'lessons.read.assigned');
+  return clone(db.lessons.filter(l => l.instructorId === instructorId && l.date === date))
+    .sort((a,b) => a.time.localeCompare(b.time));
+};
 
 /* ---------------- instructors ---------------- */
 export const listInstructors = () => clone(db.instructors);
@@ -210,4 +479,4 @@ export function todaySummary(date = TODAY){
     newEnquiries: db.enquiries.filter(e => e.status === 'New').length,
   };
 }
-export { COURSES, courseById, TODAY };
+export { COURSES, courseById, TODAY, DEMO_ACCOUNTS, VEHICLE_STATUS };

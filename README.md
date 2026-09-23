@@ -23,14 +23,27 @@ npm start
 
 Then open **http://localhost:5173/**
 
-**Demo login for the management app**
+**Two portals, two demo sign-ins**
 
-```
-owner@backgear.demo
-demo123
-```
+| Portal | Sign in as | Sees |
+|---|---|---|
+| Admin | `admin@backgear.demo` / `demo123` | The whole school |
+| Trainer | `trainer@backgear.demo` / `demo123` | Harpreet Singh's own classes and students |
 
-The login screen has a button that fills this in for you.
+The sign-in screen has a button for each.
+
+### Who may do what
+
+Permissions live in `js/data/permissions.js` and are enforced **inside the data
+store**, not just by hiding buttons. A trainer who opens the browser console and
+calls `saveStudent` or `addPayment` directly is refused, and `listStudents` only
+ever returns students whose `instructorId` matches them. Typing an admin URL
+such as `#/payments` lands them back on their own Today screen.
+
+The admin may do everything. A trainer may only: see their own students and
+classes, start and complete their own class, mark attendance, add a rating and
+lesson notes, and *ask the office* for a schedule change — they cannot move a
+class themselves.
 
 ---
 
